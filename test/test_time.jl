@@ -3,11 +3,15 @@ using Distributions
 #include("test_helpers/s_naive.jl")
 include("test_helpers/naivecum.jl")
 
-"""test a time of calculations agains naive"""
+"""test a time of cumulant's calculations agains
+the naive algorithm
 
-function test_time(n_max::Int = 4, data_l::Int = 10000, data_w::Int = 18)
+input maximal cumulant's order,
+data paremeters: number of records (T) number of variables (M)"""
+
+function test_time(n_max::Int = 4, t::Int = 10000, m::Int = 18)
     s = 3
-    data = clcopulagen(data_l, data_w);
+    data = clcopulagen(t, m);
     for n in(3:n_max)
         println("n = ", n)
         @time cumulants(data, n, s);
