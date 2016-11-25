@@ -27,11 +27,11 @@ Returns: Float64 - element of moment's tensor.
 momentel{T <: AbstractFloat}(v::Vector{T}...) =
   mean(mapreduce(i -> v[i], .*, 1:length(v)))
 
-"""Calculate a single block of moment's tensor
+"""Calculate a single block of moment's tensor.
 
-Input: Y - matrices of data, dims - tuple of their sizes
+Input: Y - matrices of data, dims - tuple of their sizes.
 
-Returns: Array{N}, a block, where N = size(dims)
+Returns: Array{N}, a block, where N = size(dims).
 """
 function momentseg{T <: AbstractFloat}(dims::Tuple, Y::Matrix{T}...)
   n = length(Y)
@@ -43,11 +43,11 @@ function momentseg{T <: AbstractFloat}(dims::Tuple, Y::Matrix{T}...)
   ret
 end
 
-"""Calculate n'th moment in the bs form
+"""Calculate n'th moment in the bs form.
 
-Input: X - matrix of data, n - moment's order, s - number of blocks
+Input: X - matrix of data, n - moment's order, s - number of blocks.
 
-Returns: n - dimentional tensor in blocks
+Returns: n - dimentional tensor in blocks.
 """
 function momentbs{T <: AbstractFloat}(X::Matrix{T}, n::Int, s::Int)
     M = size(X,2)
@@ -63,20 +63,20 @@ function momentbs{T <: AbstractFloat}(X::Matrix{T}, n::Int, s::Int)
 end
 
 # ---- following code is used to caclulate cumulants----
-"""Splits indices into given partition
+"""Splits indices into given partition.
 
-Input: n - array of indices, part - (Vector{Vector}) partition
+Input: n - array of indices, part - (Vector{Vector}) partition.
 
-Returns: Vector{Vector} - splited indices
+Returns: Vector{Vector} - splited indices.
 """
 splitind(n::Vector{Int}, part::Vector{Vector{Int}}) = map(p->n[p], part)
 
 """Calculates outer product of segments, given partition od indices.
 
-Input: s - Int, size of segment, s^n - size of output segment
-part - (Vector{Vector}) - partition of indices, c - arrays of segments
+Input: s - Int, size of segment, s^n - size of output segment,
+part - (Vector{Vector}) - partition of indices, c - arrays of segments.
 
-Returns: Array{n} - segoent of size s^n
+Returns: Array{n} - segoent of size s^n.
 """
 function prodblocks{T <: AbstractFloat}(s::Int, n::Int, part::Vector{Vector{Int}}, c::Array{T}...)
   ret = zeros(T, fill(s, n)...)
@@ -108,11 +108,12 @@ function indpart(n::Int, sigma::Int)
     p, r, length(r)
 end
 
-"""if box is notsquared makes it square by adding slices with zeros
+"""Used to handle unregular case if last blocks are not squared.
+Makes it square by adding slices with zeros.
 
-input the box array and reguired size
+Input: inputbox - box with non regular size, s - its new size.
 
-Returns N dimentional s x ...x s array
+Returns: box of size s^N.
 """
 function addzeros{T <: AbstractFloat, N}(s::Int, inputbox::Array{T,N})
   if !all(collect(size(inputbox)) .== s)
@@ -124,11 +125,12 @@ function addzeros{T <: AbstractFloat, N}(s::Int, inputbox::Array{T,N})
   inputbox
 end
 
-"""
-calculates the outer products of cumulants, for cases if the last block is
-squared or not.
-mixed element for given sigma, if last blockes are not squared
+"""Calculates the outer products of cumulants lower order cumulants.
 
+Input: n - order of result cumulants, sigma - number of input cumulants,
+c - array of input cumullants of order 2, ..., n-2.
+
+Output: n order symmetric tensor in block form.
 """
 function outerp{T <: AbstractFloat}(n::Int, sigma::Int, c::SymmetricTensor{T}...)
   s,g,M = size(c[1])
@@ -154,13 +156,12 @@ function outerp{T <: AbstractFloat}(n::Int, sigma::Int, c::SymmetricTensor{T}...
   SymmetricTensor(ret)
 end
 
+"""Calculates n'th cumulant.
 
-"""calculates n'th cumulant,
+Input: X - matrix of (centred) data, n - the order of the cumulant,
+s - number of blocks, c - array of input cumullants of order 2, ..., n-2.
 
-input data - matrix of data, n - the order of the cumulant, segments - number of segments for bs
-c - cumulants in the bs form orderred as follow c2, c3, ..., c(n-2)
-
-Returns the n order cumulant in the bs form"""
+Output: n order symmetric cumulant tensor in block form."""
 function cumulantn{T <: AbstractFloat}(X::Matrix{T}, n::Int, s::Int, c::SymmetricTensor{T}...)
   ret =  momentbs(X, n, s)
   for sigma in 2:floor(Int, n/2)
@@ -169,17 +170,11 @@ function cumulantn{T <: AbstractFloat}(X::Matrix{T}, n::Int, s::Int, c::Symmetri
   ret
 end
 
+"""Recursive formula, calculate cumulants up to given order.
 
-"""recursive formula, calculate cumulants up to order n
+Input: X - matrix of data, n - given order, s - number of blocks.
 
-input: data - matrix of data, n - the maximal order of the cumulant, segments -
- number of segments for bs
-
-Returns cumulants in the bs form orderred as follow c2, c3, ..., cn
-works for any n >= 2, tested up to n = 10, in automatic tests up to n = 6
-limit due to the increasement in computation time for benchmark
-algorithm (semi naive))
-"""
+Returns array of cumullants of order 2, ..., n, in block form."""
 function cumulants{T <: AbstractFloat}(X::Matrix{T}, n::Int, s::Int = 3)
   X = center(X)
   ret = Array(SymmetricTensor{T}, n-1)
