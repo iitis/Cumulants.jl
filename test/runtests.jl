@@ -29,6 +29,13 @@ facts("Moments") do
   end
 end
 
+facts("Exceptions") do
+  context("Size of blocks") do
+    @fact_throws DimensionMismatch, momentbs(data, 4,  25)
+    @fact_throws DimensionMismatch, cumulants(data, 3,  25)
+  end
+end
+
 facts("Comulants vs naive implementation") do
   cn = [naivecumulant(data, i) for i = 2:6]
   context("Square blocks") do

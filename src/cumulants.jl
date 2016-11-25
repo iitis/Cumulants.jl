@@ -51,6 +51,7 @@ Returns: n - dimentional tensor in blocks.
 """
 function momentbs{T <: AbstractFloat}(X::Matrix{T}, n::Int, s::Int)
     M = size(X,2)
+    sizetest(n, s) #prepare test
     g = ceil(Int, M/s)
     range = ((1:n)...)
     ret = NullableArray(Array{T, n}, fill(g, n)...)
