@@ -37,7 +37,7 @@ function momentseg{T <: AbstractFloat}(dims::Tuple, Y::Matrix{T}...)
   n = length(Y)
   ret = zeros(T, dims)
   for i = 1:prod(dims)
-    ind = ind2sub((dims), i)
+    @inbounds  ind = ind2sub((dims), i)
     @inbounds ret[ind...] = momentel(map(k -> Y[k][:,ind[k]], 1:n)...)
   end
   ret
@@ -51,13 +51,13 @@ Returns: n - dimentional tensor in blocks.
 """
 function momentbs{T <: AbstractFloat}(X::Matrix{T}, n::Int, s::Int)
     M = size(X,2)
-    sizetest(n, s) #prepare test
+    sizetest(M, s)
     g = ceil(Int, M/s)
     range = ((1:n)...)
     ret = NullableArray(Array{T, n}, fill(g, n)...)
     for i in indices(n, g)
-      Y = map(k -> X[:,seg(i[k], s, M)], 1:n)
-      dims = map(i -> (size(Y[i], 2)), range)
+      @inbounds Y = map(k -> X[:,seg(i[k], s, M)], 1:n)
+      @inbounds dims = map(i -> (size(Y[i], 2)), range)
       @inbounds ret[i...] = momentseg(dims, Y...)
     end
     SymmetricTensor(ret)
@@ -81,10 +81,11 @@ Returns: Array{n} - segoent of size s^n.
 """
 function prodblocks{T <: AbstractFloat}(s::Int, n::Int, part::Vector{Vector{Int}}, c::Array{T}...)
   ret = zeros(T, fill(s, n)...)
+  r = length(part)
   for i = 1:(s^n)
-    ind = ind2sub((fill(s, n)...), i)
-    pe = splitind(collect(ind), part)
-    @inbounds ret[ind...] = mapreduce(i -> c[i][pe[i]...], *, 1:size(part, 1))
+    @inbounds ind = ind2sub((fill(s, n)...), i)
+    @inbounds pe = splitind(collect(ind), part)
+    @inbounds ret[ind...] = mapreduce(i -> c[i][pe[i]...], *, 1:r)
   end
   ret
 end
@@ -97,8 +98,8 @@ r - Vector{Vector}, number of elements in each partition,
 number of partitions.
 """
 function indpart(n::Int, sigma::Int)
-    p = Vector{Vector{Int}}[]
-    r = Vector{Int}[]
+    p = Vector{Vector{Int64}}[]
+    r = Vector{Int64}[]
     for part in partitions(1:n, sigma)
       s = map(length, part)
       if !(1 in s)
@@ -109,21 +110,24 @@ function indpart(n::Int, sigma::Int)
     p, r, length(r)
 end
 
-"""Used to handle unregular case if last blocks are not squared.
-Makes it square by adding slices with zeros.
 
-Input: inputbox - box with non regular size, s - its new size.
+"""Read blocks, if it size is not s^N add slices of zeros to make it s^N
+
+Input: sqr - marks if size is s^N, s - required size size, st - SymmetricTensor
+  object out of which block is read, i, vector of multiindex.
 
 Returns: box of size s^N.
 """
-function addzeros{T <: AbstractFloat, N}(s::Int, inputbox::Array{T,N})
-  if !all(collect(size(inputbox)) .== s)
-    ret = zeros(T, fill(s, N)...)
+function read{T <: AbstractFloat, N}(sqr::Bool, s::Int, st::SymmetricTensor{T,N}, i::Vector{Int})
+  inputbox = val(st, i)
+  if sqr
     ind = map(k -> 1:size(inputbox,k), 1:N)
-    @inbounds ret[ind...] = inputbox
+    ret = zeros(T, fill(s, N)...)
+    ret[ind...] = inputbox
     return ret
+  else
+    return inputbox
   end
-  inputbox
 end
 
 """Calculates the outer products of cumulants lower order cumulants.
@@ -137,19 +141,17 @@ function outerp{T <: AbstractFloat}(n::Int, sigma::Int, c::SymmetricTensor{T}...
   s,g,M = size(c[1])
   p, r, len = indpart(n, sigma)
   ret = NullableArray(Array{T, n}, fill(g, n)...)
-  issquare = (s*g==M)
+  nonsqr = !c[1].sqr
   for i in indices(n, g)
     temp = zeros(T, fill(s, n)...)
+    add_zeros = nonsqr && (g in i)
     for j in 1:len
-      pe = splitind(collect(i), p[j])
-      if !issquare && (g in i)
-        @inbounds temp += prodblocks(s, n, p[j], map(l -> addzeros(s[1], c[r[j][l]-1].frame[pe[l]...].value), 1:sigma)...)
-      else
-        @inbounds temp += prodblocks(s, n, p[j], map(l -> c[r[j][l]-1].frame[pe[l]...].value, 1:sigma)...)
-      end
+      @inbounds pe = splitind(collect(i), p[j])
+      @inbounds block_ar = map(l -> read(add_zeros, s, c[r[j][l]-1], pe[l]), 1:sigma)
+      @inbounds temp += prodblocks(s, n, p[j], block_ar...)
     end
-    if !issquare && (g in i)
-      range = map(k -> ((g == i[k])? (1:(M%s)) : (1:s)), (1:length(i)))
+    if add_zeros # cuts zeros
+      @inbounds range = map(k -> ((g == i[k])? (1:(M%s)): (1:s)), (1:length(i)))
       @inbounds temp = temp[range...]
     end
     @inbounds ret[i...] = temp
@@ -180,7 +182,7 @@ function cumulants{T <: AbstractFloat}(X::Matrix{T}, n::Int, s::Int = 3)
   X = center(X)
   ret = Array(SymmetricTensor{T}, n-1)
   for i = 2:n
-    @inbounds ret[i-1] =  (i < 4)? momentbs(X, i, s) : cumulantn(X, i, s, ret[1:(i-3)]...)
+    @inbounds ret[i-1] = (i < 4)? momentbs(X, i, s): cumulantn(X, i, s, ret[1:(i-3)]...)
   end
   ret
 end

@@ -4,6 +4,7 @@ using Cumulants
 using Distributions
 using NullableArrays
 using Iterators
+import Cumulants: indpart, momentel, momentseg
 
 include("test_helpers/s_naive.jl")
 include("test_helpers/naivecum.jl")
@@ -17,6 +18,16 @@ data = clcopulagen(10, 4)
 facts("Helper functions") do
   context("center") do
     @fact sum(abs(mean(center(data), 1))) --> roughly(0, 1e-15)
+  end
+  context("momentel")do
+    @fact momentel([1.,2.,3.], [4.,5.,6.], [7.,8.,9.]) --> 90.
+    m = collect(reshape(1.:4., 2, 2))
+    @fact momentseg((2,2), m ,m) --> [2.5 5.5; 5.5 12.5]
+  end
+  context("indpart") do
+    @fact indpart(4,2)[1] --> [[[1,2],[3,4]], [[1,3],[2,4]], [[1,4],[2,3]]]
+    @fact indpart(4,2)[2] --> [[2,2],[2,2],[2,2]]
+    @fact indpart(4,2)[3] --> 3
   end
 end
 facts("Moments") do

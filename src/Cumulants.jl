@@ -3,7 +3,7 @@ module Cumulants
   using NullableArrays
   using Iterators
   using Combinatorics
-  import SymmetricTensors: indices, seg, sizetest
+  import SymmetricTensors: indices, seg, sizetest, val
 
   #calculates moments and cumulants
   include("cumulants.jl")
