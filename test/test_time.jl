@@ -9,13 +9,15 @@ the naive algorithm
 input maximal cumulant's order,
 data paremeters: number of records (T) number of variables (M)"""
 
-function test_time(n_max::Int = 4, t::Int = 10000, m::Int = 18)
+function test_time(n_max::Int = 4, t::Int = 10000, m::Int = 18, naiv::Bool = true)
     s = 3
     data = clcopulagen(t, m);
     for n in(3:n_max)
         println("n = ", n)
         @time cumulants(data, n, s);
-        println("naive")
-        @time naivecumulant(data, n);
+        if naiv
+          println("naive")
+          @time naivecumulant(data, n);
+        end
     end
 end

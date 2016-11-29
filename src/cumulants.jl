@@ -37,7 +37,7 @@ function momentseg{T <: AbstractFloat}(dims::Tuple, Y::Matrix{T}...)
   n = length(Y)
   ret = zeros(T, dims)
   for i = 1:prod(dims)
-    @inbounds  ind = ind2sub((dims), i)
+    @inbounds ind = ind2sub((dims), i)
     @inbounds ret[ind...] = momentel(map(k -> Y[k][:,ind[k]], 1:n)...)
   end
   ret
@@ -101,15 +101,14 @@ function indpart(n::Int, sigma::Int)
     p = Vector{Vector{Int64}}[]
     r = Vector{Int64}[]
     for part in partitions(1:n, sigma)
-      s = map(length, part)
+      @inbounds  s = map(length, part)
       if !(1 in s)
-        push!(p, part)
-        push!(r, s)
+        @inbounds push!(p, part)
+        @inbounds push!(r, s)
       end
     end
     p, r, length(r)
 end
-
 
 """Read blocks, if it size is not s^N add slices of zeros to make it s^N
 
@@ -119,14 +118,14 @@ Input: sqr - marks if size is s^N, s - required size size, st - SymmetricTensor
 Returns: box of size s^N.
 """
 function read{T <: AbstractFloat, N}(sqr::Bool, s::Int, st::SymmetricTensor{T,N}, i::Vector{Int})
-  inputbox = val(st, i)
+  data = val(st, i)
   if sqr
-    ind = map(k -> 1:size(inputbox,k), 1:N)
+    i = map(k -> 1:size(data,k), 1:N)
     ret = zeros(T, fill(s, N)...)
-    ret[ind...] = inputbox
+    ret[i...] = data
     return ret
   else
-    return inputbox
+    return data
   end
 end
 
@@ -143,7 +142,7 @@ function outerp{T <: AbstractFloat}(n::Int, sigma::Int, c::SymmetricTensor{T}...
   ret = NullableArray(Array{T, n}, fill(g, n)...)
   nonsqr = !c[1].sqr
   for i in indices(n, g)
-    temp = zeros(T, fill(s, n)...)
+    @inbounds temp = zeros(T, fill(s, n)...)
     add_zeros = nonsqr && (g in i)
     for j in 1:len
       @inbounds pe = splitind(collect(i), p[j])
