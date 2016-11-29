@@ -1,5 +1,4 @@
 # copula based non Gaussian data generator
-
 srand(42)
 
 """
@@ -7,7 +6,6 @@ auxiliary function for copula data generation
 inverse of copula generation function
 """
 invers_gen(x::Vector{Float64}, theta::Float64) = (1+ theta.*x).^(-1/theta)
-
 
 """
 Uses Clayton copula with Weibull marginals to generate data that
@@ -19,21 +17,20 @@ input data size t::Int, m::Int
 output data matrix(t, m)
 """
 function clcopulagen(t::Int, m::Int)
-    theta = 1.02
-    qamma_dist = Gamma(1,1/theta)
-    x = rand(t)
-    u = rand(t,m)
-    marginals_ret = zeros(Float64, t,m)
-    for i = 1:m
-        copula_ret = invers_gen(-log(u[:,i])./quantile(qamma_dist, x), theta)
-        marginals_ret[:,i] = quantile(Weibull(1.+0.01*i,1), copula_ret)
-    end
-    marginals_ret
+  theta = 1.02
+  qamma_dist = Gamma(1,1/theta)
+  x = rand(t)
+  u = rand(t,m)
+  marginals_ret = zeros(Float64, t,m)
+  for i = 1:m
+    @inbounds copula_ret = invers_gen(-log(u[:,i])./quantile(qamma_dist, x), theta)
+    @inbounds marginals_ret[:,i] = quantile(Weibull(1.+0.01*i,1), copula_ret)
+  end
+  marginals_ret
 end
 
 
 # uses the naive method to calculate cumulants 2 - 6
-
 """
 the element of the nth cumulant tensor: a sum of the moment tensor's element
 and mixed element
@@ -42,28 +39,29 @@ input n vectors of data
 
 output float number
 """
-cumulantelement{T<:AbstractFloat}(d::Vector{T}...) = moment(d...) + mixedelements(d...)
-
+cum_el{T<:AbstractFloat}(d::Vector{T}...) = moment(d...) + mixed_el(d...)
 
 """
 the element of nth moment tensor
 """
 moment{T<:AbstractFloat}(d::Vector{T}...) = mean(mapreduce(i -> d[i], .*, 1:length(d)))
 
-
 """
 the mixed element for cumulants 4-6 respectivelly
 """
-function mixedelements{T<:AbstractFloat}(A::Vector{T},B::Vector{T},C::Vector{T},D::Vector{T})
-  -mean(A.*B)*mean(C.*D) -mean(A.*C)*mean(B.*D) -mean(A.*D)*mean(B.*C)
+function mixed_el{T<:AbstractFloat}(A::Vector{T}, B::Vector{T}, C::Vector{T}, D::Vector{T})
+  -mean(A.*B)*mean(C.*D) - mean(A.*C)*mean(B.*D) - mean(A.*D)*mean(B.*C)
 end
-function mixedelements{T<:AbstractFloat}(A::Vector{T},B::Vector{T},C::Vector{T},D::Vector{T},E::Vector{T})
+function mixed_el{T<:AbstractFloat}(A::Vector{T}, B::Vector{T}, C::Vector{T},
+  D::Vector{T}, E::Vector{T})
   a = -mean(A.*B.*C)*mean(D.*E) - mean(A.*B.*D)*mean(C.*E) - mean(A.*B.*E)*mean(D.*C)
-  a -= mean(D.*B.*C)*mean(A.*E)+ mean(E.*B.*C)*mean(D.*A) +mean(A.*D.*C)*mean(B.*E)
-  a -= mean(A.*E.*C)*mean(B.*D)+ mean(D.*E.*C)*mean(A.*B)+ mean(D.*B.*E)*mean(A.*C)+mean(A.*D.*E)*mean(C.*B)
+  a -= mean(D.*B.*C)*mean(A.*E) + mean(E.*B.*C)*mean(D.*A) + mean(A.*D.*C)*mean(B.*E)
+  a -= mean(A.*E.*C)*mean(B.*D) + mean(D.*E.*C)*mean(A.*B) + mean(D.*B.*E)*mean(A.*C)
+  a -= mean(A.*D.*E)*mean(C.*B)
   return a
 end
-function mixedelements{T<:AbstractFloat}(A::Vector{T}, B::Vector{T}, C::Vector{T}, D::Vector{T}, E::Vector{T}, F::Vector{T})
+function mixed_el{T<:AbstractFloat}(A::Vector{T}, B::Vector{T}, C::Vector{T},
+  D::Vector{T}, E::Vector{T}, F::Vector{T})
   block1 = -mean(A.*B.*C)*mean(D.*E.*F) - mean(A.*B.*D)*mean(C.*E.*F) - mean(A.*B.*E)*mean(C.*D.*F)
   block1 -= mean(A.*B.*F)*mean(C.*D.*E) + mean(A.*C.*D)*mean(B.*E.*F) + mean(A.*C.*E)*mean(B.*D.*F)
   block1 -= mean(A.*C.*F)*mean(B.*D.*E) + mean(A.*D.*E)*mean(B.*C.*F) + mean(A.*D.*F)*mean(B.*C.*E)
@@ -84,7 +82,6 @@ function mixedelements{T<:AbstractFloat}(A::Vector{T}, B::Vector{T}, C::Vector{T
   return block2+block1-2*block3
 end
 
-
 """
 calculates cumulant of given order
 
@@ -93,19 +90,19 @@ imput: data, and order
 output: array{n}
 """
 function naivecumulant{T<:AbstractFloat}(data::Matrix{T}, order::Int = 4)
-    data = center(data)
-    n = size(data, 2)
-    ret = zeros(T, fill(n, order)...)
-    if order in [2,3]
-      @inbounds for i = 1:(n^order)
-          ind = ind2sub((fill(n, order)...), i)
-          ret[ind...] = moment(map(i -> data[:,ind[i]],1:order)...)
-        end
-    elseif order in [4,5,6]
-      @inbounds for i = 1:(n^order)
-          ind = ind2sub((fill(n, order)...), i)
-          ret[ind...] = cumulantelement(map(i -> data[:,ind[i]],1:order)...)
-        end
+  data = center(data)
+  n = size(data, 2)
+  ret = zeros(T, fill(n, order)...)
+  if order in [2,3]
+    for i = 1:(n^order)
+      @inbounds ind = ind2sub((fill(n, order)...), i)
+      @inbounds ret[ind...] = moment(map(i -> data[:,ind[i]],1:order)...)
     end
-    return ret
+  elseif order in [4,5,6]
+    for i = 1:(n^order)
+      @inbounds ind = ind2sub((fill(n, order)...), i)
+      @inbounds ret[ind...] = cum_el(map(i -> data[:,ind[i]],1:order)...)
+    end
+  end
+  return ret
 end
