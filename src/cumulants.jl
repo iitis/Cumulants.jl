@@ -1,5 +1,4 @@
 # ---- following code is used to caclulate moments ----
-
 """ Center each column of matrix (substracts column's mean).
 
 Input: data in a matrix form.
@@ -33,10 +32,21 @@ Input: Y - matrices of data, dims - tuple of their sizes.
 
 Returns: Array{N}, a block, where N = size(dims).
 """
-function momentseg{T <: AbstractFloat}(dims::Tuple, Y::Matrix{T}...)
+function momentseg1{T <: AbstractFloat}(dims::Tuple, Y::Matrix{T}...)
   n = length(Y)
   ret = zeros(T, dims)
   for i = 1:prod(dims)
+    @inbounds ind = ind2sub((dims), i)
+    @inbounds ret[ind...] = momentel(map(k -> Y[k][:,ind[k]], 1:n)...)
+  end
+  ret
+end
+
+function momentseg{T <: AbstractFloat}(dims::Tuple, Y::Matrix{T}...)
+  n = length(Y)
+  #ret = zeros(T, dims)
+  ret = SharedArray(T, dims)
+  @sync @parallel for i = 1:prod(dims)
     @inbounds ind = ind2sub((dims), i)
     @inbounds ret[ind...] = momentel(map(k -> Y[k][:,ind[k]], 1:n)...)
   end
@@ -80,9 +90,10 @@ part - (Vector{Vector}) - partition of indices, c - arrays of segments.
 Returns: Array{n} - segoent of size s^n.
 """
 function prodblocks{T <: AbstractFloat}(s::Int, n::Int, part::Vector{Vector{Int}}, c::Array{T}...)
-  ret = zeros(T, fill(s, n)...)
+  #ret = zeros(T, fill(s, n)...)
+  ret = SharedArray(T, fill(s, n)...)
   r = length(part)
-  for i = 1:(s^n)
+  @sync @parallel for i = 1:(s^n)
     @inbounds ind = ind2sub((fill(s, n)...), i)
     @inbounds pe = splitind(collect(ind), part)
     @inbounds ret[ind...] = mapreduce(i -> c[i][pe[i]...], *, 1:r)

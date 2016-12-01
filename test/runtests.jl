@@ -4,7 +4,9 @@ using Cumulants
 using Distributions
 using NullableArrays
 using Iterators
+using Combinatorics
 import Cumulants: indpart, momentel, momentseg
+import SymmetricTensors: indices
 
 include("test_helpers/s_naive.jl")
 include("test_helpers/naivecum.jl")
@@ -47,7 +49,7 @@ facts("Exceptions") do
   end
 end
 
-facts("Comulants vs naive implementation") do
+facts("Cumulants vs naive implementation") do
   cn = [naivecumulant(data, i) for i = 2:6]
   context("Square blocks") do
     c2, c3, c4, c5, c6 = cumulants(data, 6, 2)
@@ -69,24 +71,24 @@ facts("Comulants vs naive implementation") do
 end
 
 facts("test semi-naive against gaussian") do
-  cg = snaivecumulant(gaus_dat, 8)
-  @fact cg["c2"] --> roughly(naivecumulant(gaus_dat, 2))
-  @fact cg["c3"] --> roughly(zeros(Float64, 2,2,2))
-  @fact cg["c4"] --> roughly(zeros(Float64, 2,2,2,2), 1e-3)
-  @fact cg["c5"] --> roughly(zeros(Float64, 2,2,2,2,2))
-  @fact cg["c6"] --> roughly(zeros(Float64, 2,2,2,2,2,2), 1e-4)
-  @fact cg["c7"] --> roughly(zeros(Float64, 2,2,2,2,2,2,2))
-  @fact cg["c8"] --> roughly(zeros(Float64, 2,2,2,2,2,2,2,2), 1e-5)
+  cn2, cn3, cn4, cn5, cn6, cn7, cn8 = snaivecumulant(gaus_dat, 8)
+  @fact cn2 --> roughly(naivecumulant(gaus_dat, 2))
+  @fact cn3 --> roughly(zeros(Float64, 2,2,2))
+  @fact cn4 --> roughly(zeros(Float64, 2,2,2,2), 1e-3)
+  @fact cn5--> roughly(zeros(Float64, 2,2,2,2,2))
+  @fact cn6 --> roughly(zeros(Float64, 2,2,2,2,2,2), 1e-4)
+  @fact cn7 --> roughly(zeros(Float64, 2,2,2,2,2,2,2))
+  @fact cn8 --> roughly(zeros(Float64, 2,2,2,2,2,2,2,2), 1e-5)
 end
 
-facts("Cumulants vs semi-naive non-square") do
+cn2, cn3, cn4, cn5, cn6, cn7, cn8 = snaivecumulant(data[:, 1:2], 8)
+facts("Cumulants vs semi-naive square") do
   c2, c3, c4, c5, c6, c7, c8 = cumulants(data[:, 1:2], 8, 2)
-  cnn = snaivecumulant(data[:, 1:2], 8)
-  @fact convert(Array, c2) --> roughly(cnn["c2"])
-  @fact convert(Array, c3) --> roughly(cnn["c3"])
-  @fact convert(Array, c4) --> roughly(cnn["c4"])
-  @fact convert(Array, c5) --> roughly(cnn["c5"])
-  @fact convert(Array, c6) --> roughly(cnn["c6"])
-  @fact convert(Array, c7) --> roughly(cnn["c7"])
-  @fact convert(Array, c8) --> roughly(cnn["c8"])
+  @fact convert(Array, c2) --> roughly(cn2)
+  @fact convert(Array, c3) --> roughly(cn3)
+  @fact convert(Array, c4) --> roughly(cn4)
+  @fact convert(Array, c5) --> roughly(cn5)
+  @fact convert(Array, c6) --> roughly(cn6)
+  @fact convert(Array, c7) --> roughly(cn7)
+  @fact convert(Array, c8) --> roughly(cn8)
 end

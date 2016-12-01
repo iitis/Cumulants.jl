@@ -1,53 +1,63 @@
-# copula based non Gaussian data generator
+# --- copula based non Gaussian data generator
 srand(42)
 
 """
-auxiliary function for copula data generation
-inverse of copula generation function
+Inverse of Clayton Copula generator.
+
+Input: x - data vector, theta - parameter.
+
+Returns: transformed data vector.
 """
-invers_gen(x::Vector{Float64}, theta::Float64) = (1+ theta.*x).^(-1/theta)
+invers_gen(x::Vector{Float64}, theta::Float64) = (1 + theta.*x).^(-1/theta)
 
 """
-Uses Clayton copula with Weibull marginals to generate data that
-are not gaussian distributed for tests
+Uses Clayton copula with Weibull marginals to generate multivariate data that
+are not gaussian distributed for cumulantgs tests.
 
+Input: m - dimention of multivariete data, t - number of random data relaisations
 
-input data size t::Int, m::Int
-
-output data matrix(t, m)
+Returns: Matrix{Float} of size t*m - t realisations of m dimentional random var.
 """
 function clcopulagen(t::Int, m::Int)
   theta = 1.02
   qamma_dist = Gamma(1,1/theta)
   x = rand(t)
-  u = rand(t,m)
-  marginals_ret = zeros(Float64, t,m)
+  u = rand(t, m)
+  ret = zeros(Float64, t, m)
   for i = 1:m
-    @inbounds copula_ret = invers_gen(-log(u[:,i])./quantile(qamma_dist, x), theta)
-    @inbounds marginals_ret[:,i] = quantile(Weibull(1.+0.01*i,1), copula_ret)
+    @inbounds unif_ret = invers_gen(-log(u[:,i])./quantile(qamma_dist, x), theta)
+    @inbounds ret[:,i] = quantile(Weibull(1.+0.01*i,1), unif_ret)
   end
-  marginals_ret
+  ret
 end
 
-
-# uses the naive method to calculate cumulants 2 - 6
+# --- uses the naive method to calculate cumulants 2 - 6
 """
-the element of the nth cumulant tensor: a sum of the moment tensor's element
-and mixed element
+The element of the n'th cumulant tensor.
 
-input n vectors of data
+Input: n vectors of data
 
-output float number
+Output: Float - sum of n'th moment's element and mixed element.
 """
 cum_el{T<:AbstractFloat}(d::Vector{T}...) = moment(d...) + mixed_el(d...)
 
 """
-the element of nth moment tensor
+The element of n'th moment tensor.
+
+Input: n vectors of data
+
+Output: Float - result of contraction of vectors, (element wise multiplication
+  and mean).
 """
 moment{T<:AbstractFloat}(d::Vector{T}...) = mean(mapreduce(i -> d[i], .*, 1:length(d)))
 
 """
-the mixed element for cumulants 4-6 respectivelly
+The mixed element for cumulants 4-6 respectivelly.
+
+Input: 4-6 vectors of data,
+
+Output: Float - result of contraction of vectors, (permutative sum and
+  multiplication of means of elementwise products).
 """
 function mixed_el{T<:AbstractFloat}(A::Vector{T}, B::Vector{T}, C::Vector{T}, D::Vector{T})
   -mean(A.*B)*mean(C.*D) - mean(A.*C)*mean(B.*D) - mean(A.*D)*mean(B.*C)
@@ -83,25 +93,26 @@ function mixed_el{T<:AbstractFloat}(A::Vector{T}, B::Vector{T}, C::Vector{T},
 end
 
 """
-calculates cumulant of given order
+Calculates cumulant using naive algorithm.
 
-imput: data, and order
+Input: data - input data in matrix form, order - Int in [2,3,...,6], cumulant's
+order.
 
-output: array{n}
+Output: cumulant, tensor of size m ^ order
 """
 function naivecumulant{T<:AbstractFloat}(data::Matrix{T}, order::Int = 4)
   data = center(data)
-  n = size(data, 2)
-  ret = zeros(T, fill(n, order)...)
+  m = size(data, 2)
+  ret = zeros(T, fill(m, order)...)
   if order in [2,3]
-    for i = 1:(n^order)
-      @inbounds ind = ind2sub((fill(n, order)...), i)
-      @inbounds ret[ind...] = moment(map(i -> data[:,ind[i]],1:order)...)
+    for i = 1:(m^order)
+      @inbounds ind = ind2sub((fill(m, order)...), i)
+      @inbounds ret[ind...] = moment(map(k -> data[:,ind[k]],1:order)...)
     end
   elseif order in [4,5,6]
-    for i = 1:(n^order)
-      @inbounds ind = ind2sub((fill(n, order)...), i)
-      @inbounds ret[ind...] = cum_el(map(i -> data[:,ind[i]],1:order)...)
+    for i = 1:(m^order)
+      @inbounds ind = ind2sub((fill(m, order)...), i)
+      @inbounds ret[ind...] = cum_el(map(k -> data[:,ind[k]],1:order)...)
     end
   end
   return ret

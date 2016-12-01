@@ -1,16 +1,27 @@
-using Cumulants
+if false
+  addprocs()
+  @everywhere using Cumulants
+  rmprocs()
+else
+  using Cumulants
+end
+
 using Distributions
-#include("test_helpers/s_naive.jl")
+using Combinatorics
+import SymmetricTensors: indices
+include("test_helpers/s_naive.jl")
 include("test_helpers/naivecum.jl")
 
-"""test a time of cumulant's calculations agains
-the naive algorithm
+"""Test a time of cumulant's calculations agains
+the naive algorithm and semi naive.
 
-input maximal cumulant's order,
-data paremeters: number of records (T) number of variables (M)"""
+Input: n_max -  maximal cumulant's order, data size t,m:
+"""
 
-function test_time(n_max::Int = 4, t::Int = 10000, m::Int = 18, naiv::Bool = true)
+function test_time(n_max::Int = 4, t::Int = 10000, m::Int = 18, naiv::Bool = true,
+  sn::Bool = false)
     s = 3
+    #s = 9
     data = clcopulagen(t, m);
     for n in(3:n_max)
         println("n = ", n)
@@ -18,6 +29,10 @@ function test_time(n_max::Int = 4, t::Int = 10000, m::Int = 18, naiv::Bool = tru
         if naiv
           println("naive")
           @time naivecumulant(data, n);
+        end
+        if sn
+          println("seminaive")
+          @time snaivecumulant(data, n);
         end
     end
 end

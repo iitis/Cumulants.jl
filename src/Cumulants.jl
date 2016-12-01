@@ -6,6 +6,7 @@ module Cumulants
   import SymmetricTensors: indices, seg, sizetest, val
 
   #calculates moments and cumulants
+
   include("cumulants.jl")
 
   #partitions. Knuth modified algorithm
