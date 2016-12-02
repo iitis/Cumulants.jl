@@ -5,10 +5,10 @@ if false
 else
   using Cumulants
 end
-
 using Distributions
-using Combinatorics
 import SymmetricTensors: indices
+import Cumulants: momentel
+
 include("test_helpers/s_naive.jl")
 include("test_helpers/naivecum.jl")
 
@@ -21,7 +21,6 @@ Input: n_max -  maximal cumulant's order, data size t,m:
 function test_time(n_max::Int = 4, t::Int = 10000, m::Int = 18, naiv::Bool = true,
   sn::Bool = false)
     s = 3
-    #s = 9
     data = clcopulagen(t, m);
     for n in(3:n_max)
         println("n = ", n)

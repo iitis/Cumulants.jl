@@ -28,7 +28,7 @@ function moment_n{T<:AbstractFloat}(data::Matrix{T}, order::Int)
     m = size(data,2)
     ret = zeros(fill(m, order)...)
     for ind in indices(order, m)
-      @inbounds temp = moment(map(k -> data[:,ind[k]],1:order)...)
+      @inbounds temp = momentel(map(k -> data[:,ind[k]],1:order)...)
       for per in collect(permutations([ind...]))
         @inbounds ret[per...] = temp
       end

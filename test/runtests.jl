@@ -4,7 +4,6 @@ using Cumulants
 using Distributions
 using NullableArrays
 using Iterators
-using Combinatorics
 import Cumulants: indpart, momentel, momentseg
 import SymmetricTensors: indices
 

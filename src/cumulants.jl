@@ -32,25 +32,14 @@ Input: Y - matrices of data, dims - tuple of their sizes.
 
 Returns: Array{N}, a block, where N = size(dims).
 """
-function momentseg1{T <: AbstractFloat}(dims::Tuple, Y::Matrix{T}...)
-  n = length(Y)
-  ret = zeros(T, dims)
-  for i = 1:prod(dims)
-    @inbounds ind = ind2sub((dims), i)
-    @inbounds ret[ind...] = momentel(map(k -> Y[k][:,ind[k]], 1:n)...)
-  end
-  ret
-end
-
 function momentseg{T <: AbstractFloat}(dims::Tuple, Y::Matrix{T}...)
   n = length(Y)
-  #ret = zeros(T, dims)
-  ret = SharedArray(T, dims)
+  ret = (nprocs()== 1)? zeros(T, dims): SharedArray(T, dims)
   @sync @parallel for i = 1:prod(dims)
     @inbounds ind = ind2sub((dims), i)
     @inbounds ret[ind...] = momentel(map(k -> Y[k][:,ind[k]], 1:n)...)
   end
-  ret
+  Array(ret)
 end
 
 """Calculate n'th moment in the bs form.
@@ -90,15 +79,14 @@ part - (Vector{Vector}) - partition of indices, c - arrays of segments.
 Returns: Array{n} - segoent of size s^n.
 """
 function prodblocks{T <: AbstractFloat}(s::Int, n::Int, part::Vector{Vector{Int}}, c::Array{T}...)
-  #ret = zeros(T, fill(s, n)...)
-  ret = SharedArray(T, fill(s, n)...)
+  ret = (nprocs()== 1)? zeros(T, fill(s, n)...): SharedArray(T, fill(s, n)...)
   r = length(part)
   @sync @parallel for i = 1:(s^n)
     @inbounds ind = ind2sub((fill(s, n)...), i)
     @inbounds pe = splitind(collect(ind), part)
     @inbounds ret[ind...] = mapreduce(i -> c[i][pe[i]...], *, 1:r)
   end
-  ret
+Array(ret)
 end
 
 """Create all partitions of sequence 1:n into sigma subs multi indices
