@@ -39,7 +39,7 @@ Input: n vectors of data
 
 Output: Float - sum of n'th moment's element and mixed element.
 """
-cum_el{T<:AbstractFloat}(d::Vector{T}...) = momentel(d...) + mixed_el(d...)
+cum_el{T<:AbstractFloat}(d::Vector{Vector{T}}) = momentel(d) + mixed_el(d...)
 
 """
 The mixed element for cumulants 4-6 respectivelly.
@@ -97,12 +97,12 @@ function naivecumulant{T<:AbstractFloat}(data::Matrix{T}, order::Int = 4)
   if order in [2,3]
     for i = 1:(m^order)
       @inbounds ind = ind2sub((fill(m, order)...), i)
-      @inbounds ret[ind...] = momentel(map(k -> data[:,ind[k]],1:order)...)
+      @inbounds ret[ind...] = momentel(map(k -> data[:,ind[k]],1:order))
     end
   elseif order in [4,5,6]
     for i = 1:(m^order)
       @inbounds ind = ind2sub((fill(m, order)...), i)
-      @inbounds ret[ind...] = cum_el(map(k -> data[:,ind[k]],1:order)...)
+      @inbounds ret[ind...] = cum_el(map(k -> data[:,ind[k]],1:order))
     end
   end
   return ret

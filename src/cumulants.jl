@@ -19,25 +19,25 @@ end
 
 """ Calculates the single element of moment's tensor.
 
-Input: v - vectors of data to be multipled and contracted.
+Input: v - vector of vectors of data to be multipled and contracted.
 
 Returns: Float64 - element of moment's tensor.
 """
-momentel{T <: AbstractFloat}(v::Vector{T}...) =
+momentel{T <: AbstractFloat}(v::Vector{Vector{T}}) =
   mean(mapreduce(i -> v[i], .*, 1:length(v)))
 
 """Calculate a single block of moment's tensor.
 
-Input: Y - matrices of data, dims - tuple of their sizes.
+Input: Y - vector of matrices of data, dims - tuple of their sizes.
 
 Returns: Array{N}, a block, where N = size(dims).
 """
-function momentseg{T <: AbstractFloat}(dims::Tuple, Y::Matrix{T}...)
+function momentseg{T <: AbstractFloat}(dims::Tuple, Y::Vector{Matrix{T}})
   n = length(Y)
   ret = (nprocs()== 1)? zeros(T, dims): SharedArray(T, dims)
   @sync @parallel for i = 1:prod(dims)
     @inbounds ind = ind2sub((dims), i)
-    @inbounds ret[ind...] = momentel(map(k -> Y[k][:,ind[k]], 1:n)...)
+    @inbounds ret[ind...] = momentel(map(k -> Y[k][:,ind[k]], 1:n))
   end
   Array(ret)
 end
@@ -57,7 +57,7 @@ function momentbs{T <: AbstractFloat}(X::Matrix{T}, n::Int, s::Int)
     for i in indices(n, g)
       @inbounds Y = map(k -> X[:,seg(i[k], s, M)], 1:n)
       @inbounds dims = map(i -> (size(Y[i], 2)), range)
-      @inbounds ret[i...] = momentseg(dims, Y...)
+      @inbounds ret[i...] = momentseg(dims, Y)
     end
     SymmetricTensor(ret)
 end
@@ -74,11 +74,12 @@ splitind(n::Vector{Int}, part::Vector{Vector{Int}}) = map(p->n[p], part)
 """Calculates outer product of segments, given partition od indices.
 
 Input: s - Int, size of segment, s^n - size of output segment,
-part - (Vector{Vector}) - partition of indices, c - arrays of segments.
+part - (Vector{Vector}) - partition of indices, c - tuple of segments.
 
-Returns: Array{n} - segoent of size s^n.
+Returns: Array{n} - segment of size s^n.
 """
-function prodblocks{T <: AbstractFloat}(s::Int, n::Int, part::Vector{Vector{Int}}, c::Array{T}...)
+function prodblocks{T <: AbstractFloat}(s::Int, n::Int, part::Vector{Vector{Int}},
+  c::Array{T}...)
   ret = (nprocs()== 1)? zeros(T, fill(s, n)...): SharedArray(T, fill(s, n)...)
   r = length(part)
   @sync @parallel for i = 1:(s^n)
@@ -116,7 +117,8 @@ Input: sqr - marks if size is s^N, s - required size size, st - SymmetricTensor
 
 Returns: box of size s^N.
 """
-function read{T <: AbstractFloat, N}(sqr::Bool, s::Int, st::SymmetricTensor{T,N}, i::Vector{Int})
+function read{T <: AbstractFloat, N}(sqr::Bool, s::Int, st::SymmetricTensor{T,N},
+  i::Vector{Int})
   data = val(st, i)
   if sqr
     i = map(k -> 1:size(data,k), 1:N)
