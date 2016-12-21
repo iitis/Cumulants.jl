@@ -32,6 +32,16 @@ function clcopulagen(t::Int, m::Int)
 end
 
 # --- uses the naive method to calculate cumulants 2 - 6
+
+""" Calculates the single element of moment's tensor.
+
+Input: v - vector of vectors or matrix of data to be multipled and contracted.
+
+Returns: Float64 - element of moment's tensor.
+"""
+momentel{T <: AbstractFloat}(v::Vector{Vector{T}}) =
+  mean(mapreduce(i -> v[i], .*, 1:length(v)))
+
 """
 The element of the n'th cumulant tensor.
 

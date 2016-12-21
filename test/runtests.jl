@@ -4,7 +4,7 @@ using Cumulants
 using Distributions
 using NullableArrays
 using Iterators
-import Cumulants: indpart, momentel, momentseg
+import Cumulants: indpart, momentseg, splitdata
 import SymmetricTensors: indices
 
 include("test_helpers/s_naive.jl")
@@ -22,22 +22,23 @@ facts("Helper functions") do
   end
   context("momentel")do
     @fact momentel([[1.,2.,3.], [4.,5.,6.], [7.,8.,9.]]) --> 90.
-    m = collect(reshape(1.:4., 2, 2))
-    @fact momentseg((2,2), [m ,m]) --> [2.5 5.5; 5.5 12.5]
+    m = collect(reshape(1.:4., 2, 2))'
+    #@fact momentseg((2,2), [m ,m]) --> [2.5 5.5; 5.5 12.5]
+    @fact momentseg([m ,m], 2) --> [5.0 7.0; 7.0 10.0]
   end
   context("indpart") do
-    @fact indpart(4,2)[1] --> [[[1,2],[3,4]], [[1,3],[2,4]], [[1,4],[2,3]]]
-    @fact indpart(4,2)[2] --> [[2,2],[2,2],[2,2]]
-    @fact indpart(4,2)[3] --> 3
+    @fact indpart(4,2) --> [[[1,2],[3,4]], [[1,3],[2,4]], [[1,4],[2,3]]]
+    #@fact indpart(4,2)[2] --> [[2,2],[2,2],[2,2]]
   end
 end
 facts("Moments") do
+  d = splitdata(data, 2)
   context("3") do
-    @fact convert(Array, momentbs(data, 3, 2)) --> roughly(moment_n(data, 3))
+    @fact convert(Array, momentbs(d, 3)) --> roughly(moment_n(data, 3))
   end
 
   context("4") do
-    @fact convert(Array, momentbs(data, 4, 2)) --> roughly(moment_n(data, 4))
+    @fact convert(Array, momentbs(d, 4)) --> roughly(moment_n(data, 4))
   end
 end
 
