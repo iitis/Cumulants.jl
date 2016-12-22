@@ -3,14 +3,10 @@ module Cumulants
   using NullableArrays
   using Iterators
   using Combinatorics
-  import SymmetricTensors: indices, seg, sizetest, val
+  import SymmetricTensors: indices, ind2range, sizetest, accessblock
 
   #calculates moments and cumulants
-
   include("cumulants.jl")
-
-  #partitions. Knuth modified algorithm
-  #include("/home/krzysztof/Dokumenty/badania/tensors_sym/cum_calc/text/tensor-network-project/src/part.jl")
 
   export momentbs, center, cumulants
 end

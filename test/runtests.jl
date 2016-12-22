@@ -4,7 +4,7 @@ using Cumulants
 using Distributions
 using NullableArrays
 using Iterators
-import Cumulants: indpart, momentseg, splitdata
+import Cumulants: indpart, momentseg, splitdata, mom_el, accesscum, outprodblocks
 import SymmetricTensors: indices
 
 include("test_helpers/s_naive.jl")
@@ -18,25 +18,28 @@ data = clcopulagen(10, 4)
 
 facts("Helper functions") do
   context("center") do
-    @fact sum(abs(mean(center(data), 1))) --> roughly(0, 1e-15)
+    @fact center([[1.   2.]; [2.  4.]]) --> [[-0.5   -1.]; [0.5  1.]]
   end
-  context("momentel")do
-    @fact momentel([[1.,2.,3.], [4.,5.,6.], [7.,8.,9.]]) --> 90.
-    m = collect(reshape(1.:4., 2, 2))'
-    #@fact momentseg((2,2), [m ,m]) --> [2.5 5.5; 5.5 12.5]
-    @fact momentseg([m ,m], 2) --> [5.0 7.0; 7.0 10.0]
+  context("splitdata") do
+    M = [1. 2. 3. 4.; 5. 6. 7. 8.]
+    @fact splitdata(M, 2) --> [[1. 2. ; 5. 6.],[3. 4. ; 7. 8.]]
+    @fact splitdata(M, 3)[1] --> [1. 2. 3.; 5. 6. 7.]
   end
-  context("indpart") do
-    @fact indpart(4,2) --> [[[1,2],[3,4]], [[1,3],[2,4]], [[1,4],[2,3]]]
-    #@fact indpart(4,2)[2] --> [[2,2],[2,2],[2,2]]
+  context("moment helpers")do
+    @fact mom_el([[1. 2. ; 5. 6.],[3. 4. ; 7. 8.]], (1,1)) --> 19.
+    @fact mom_el([[1. 2. ; 5. 6.],[3. 4. ; 7. 8.]], (1,2)) --> 22.
+    @fact momentseg([[1. 2.; 5. 6.],[3. 4.; 7. 8.]])-->[[19.0  22.0];[24.0  28.0]]
   end
 end
 facts("Moments") do
+  context("2") do
+    mom = momentbs([[1. 2. ; 5. 6.],[3. 4. ; 7. 8.]], 2).frame
+    @fact mom[1,2].value --> [19.0 22.0; 24.0 28.0]
+  end
   d = splitdata(data, 2)
   context("3") do
     @fact convert(Array, momentbs(d, 3)) --> roughly(moment_n(data, 3))
   end
-
   context("4") do
     @fact convert(Array, momentbs(d, 4)) --> roughly(moment_n(data, 4))
   end
@@ -46,6 +49,24 @@ facts("Exceptions") do
   context("Size of blocks") do
     @fact_throws DimensionMismatch, momentbs(data, 4,  25)
     @fact_throws DimensionMismatch, cumulants(data, 3,  25)
+  end
+end
+
+facts("Cumulant helper functions") do
+  context("indpart") do
+    @fact indpart(4,2) --> [[[1,2],[3,4]], [[1,3],[2,4]], [[1,4],[2,3]]]
+  end
+  context("operation on blocks") do
+    c = SymmetricTensor([1.0 2.0 3.0; 2.0 4.0 6.0; 3.0 6.0 5.0])
+    blocks = accesscum((1,1,1,1), [[1,2],[3,4]], false, c)
+    @fact blocks --> [[1.0 2.0; 2.0 4.0], [1.0 2.0; 2.0 4.0]]
+    @fact accesscum((1,1,1,2), [[1,2],[3,4]], false, c) --> [[1.0 2.0; 2.0 4.0],
+    [3.0 0.0; 6.0 0.0]]
+    @fact accesscum((1,1,1,2), [[1,4],[2,3]], false, c) --> [[3.0 0.0; 6.0 0.0],
+    [1.0 2.0; 2.0 4.0]]
+    block = outprodblocks(4, [[1,2],[3,4]], blocks)
+    @fact block[:,:,1,1] --> [1.0  2.0; 2.0  4.0]
+    @fact block[:,:,1,2] --> [2.0  4.0; 4.0  8.0]
   end
 end
 
@@ -61,12 +82,12 @@ facts("Cumulants vs naive implementation") do
   end
 
   context("Non-square blocks") do
-    c2, c3, c4, c5, c6 = cumulants(data[:, 1:3], 6, 2)
-    @fact convert(Array, c2) --> roughly(cn[1][fill(1:3, 2)...])
-    @fact convert(Array, c3) --> roughly(cn[2][fill(1:3, 3)...])
-    @fact convert(Array, c4) --> roughly(cn[3][fill(1:3, 4)...])
-    @fact convert(Array, c5) --> roughly(cn[4][fill(1:3, 5)...])
-    @fact convert(Array, c6) --> roughly(cn[5][fill(1:3, 6)...])
+    c2, c3, c4, c5, c6 = cumulants(data, 6, 3)
+    @fact convert(Array, c2) --> roughly(cn[1])
+    @fact convert(Array, c3) --> roughly(cn[2])
+    @fact convert(Array, c4) --> roughly(cn[3])
+    @fact convert(Array, c5) --> roughly(cn[4])
+    @fact convert(Array, c6) --> roughly(cn[5])
   end
 end
 
