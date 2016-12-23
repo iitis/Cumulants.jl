@@ -124,28 +124,44 @@ function momentbs{T <: AbstractFloat}(X::Vector{Matrix{T}}, outdims::Int)
 end
 
 # ---- following code is used to caclulate cumulants in SymmetricTensor form----
+"""
+
+Type that stores a partition of multiindex into subests, sizes of subests,
+size of original multitindex and number of subsets
+
+"""
+type IndexPart
+  part::Vector{Vector{Int64}}
+  subsetslen::Vector{Int64}
+  nind::Int
+  npart::Int
+  (::Type{IndexPart})(part::Vector{Vector{Int64}}, subsetslen::Vector{Int64},
+nind::Int, npart::Int) = new(part, subsetslen, nind, npart)
+end
 
 """
 
     indpart(nind::Int, npart::Int)
 
-Returns vector all partitions of set [1, 2, ..., nind] into npart of size >= 2
-each.
+Returns vector of IndexPart type, that includes partitions of set [1, 2, ..., nind]
+into npart subests of size >= 2, sizes of each subest, size of original set and
+number of partitions
 
 ```jldoctest
 julia>indpart(4,2)
-3-element Array{Array{Array{Int,1},1},1}:
-[[1,2],[3,4]]
-[[1,3],[2,4]]
-[[1,4],[2,3]]
+3-element Array{Cumulants.IndexPart,1}:
+ IndexPart(Array{Int64,1}[[1,2],[3,4]],[2,2],4,2)
+ IndexPart(Array{Int64,1}[[1,3],[2,4]],[2,2],4,2)
+ IndexPart(Array{Int64,1}[[1,4],[2,3]],[2,2],4,2)
 ```
 """
+
 function indpart(nind::Int, npart::Int)
-    part_set = Vector{Vector{Int64}}[]
+    part_set = IndexPart[]
     for part in partitions(1:nind, npart)
-      s = map(length, part)
-      if !(1 in s)
-        push!(part_set, part)
+      subsetslen = map(length, part)
+      if !(1 in subsetslen)
+        push!(part_set, IndexPart(part, subsetslen, nind, npart))
       end
     end
     part_set
@@ -153,48 +169,43 @@ end
 
 """
 
-  accesscum(mulind::Tuple{Int, ...}, part::Vector{Vector{Int}}, sqrblk::Bool,
+  accesscum(mulind::Tuple{Int, ...}, ::IndexPart,
     cum::SymmetricTensor{Float}...)
 
 
-Returns: vector of blocks (arrays) corrsponding to the partition (part) of multiindex.
-Each part of the partition indexes a block from cumulant of order equal to lenght(part).
- sqrblk - (Bool) determines if the block is squared. If not, slices of zeros are
- added to make each its size equal to s.
+Returns: vector of blocks from cumulants. Each block correspond to a subests
+ of partition (part) of multiindex (multiind).
 
  ```jldoctest
  julia> cum = SymmetricTensor([1.0 2.0 3.0; 2.0 4.0 6.0; 3.0 6.0 5.0]);
 
-julia> accesscum((1,1,1,1), [[1,2],[3,4]], false, cum)
+julia> accesscum((1,1,1,1), IndexPart(Array{Int64,1}[[1,2],[3,4]],[2,2],4,2), cum)
 Array{Float64,N}[
 [1.0 2.0; 2.0 4.0],
 [1.0 2.0; 2.0 4.0]]
 
-julia> accesscum((1,1,1,2), [[1,2],[3,4]], false, cum)
+julia> accesscum((1,1,1,2), IndexPart(Array{Int64,1}[[1,2],[3,4]],[2,2],4,2), cum)
 
 Array{Float64,N}[
 [1.0 2.0; 2.0 4.0],
 [3.0 0.0; 6.0 0.0]]
 
-julia> accesscum((1,1,1,1), [[1,4],[2,3]], false, cum)
+julia> accesscum((1,1,1,1), IndexPart(Array{Int64,1}[[1,4],[2,3]],[2,2],4,2), cum)
 
 Array{Float64,N}[
 [1.0 2.0; 2.0 4.0],
 [1.0 2.0; 2.0 4.0]]
  ```
 """
-function accesscum{T <: AbstractFloat}(mulind::Tuple, part::Vector{Vector{Int}},
-  sqrblk::Bool, cum::SymmetricTensor{T}...)
-  npart = length(part)
-  blocks = Array(Array{T}, npart)
-  for k in 1:npart
-    N = length(part[k])
-    data = accessblock(cum[N-1], mulind[part[k]])
-    if sqrblk
+function accesscum{T <: AbstractFloat}(mulind::Tuple, part::IndexPart, cum::SymmetricTensor{T}...)
+  blocks = Array(Array{T}, part.npart)
+  for k in 1:part.npart
+    data = accessblock(cum[part.subsetslen[k]-1], mulind[part.part[k]])
+    if cum[1].sqr || !(cum[1].bln in mulind)
       blocks[k] = data
     else
-      ind = map(k -> 1:size(data,k), 1:N)
-      datapadded = zeros(T, fill(cum[1].bls, N)...)
+      ind = map(i -> 1:size(data,i), 1:part.subsetslen[k])
+      datapadded = zeros(T, fill(cum[1].bls, part.subsetslen[k])...)
       @inbounds datapadded[ind...] = data
       blocks[k] = datapadded
     end
@@ -202,17 +213,16 @@ function accesscum{T <: AbstractFloat}(mulind::Tuple, part::Vector{Vector{Int}},
   blocks
 end
 
-"""Calculates outer product of blocks, given partition of indices.
+"""
 
-Input: s - Int, size of segment, part - (Vector{Vector}) - partition of indices,
-ar_s - array of segments.
+    outprodblocks(n::Int, part::Vector{Vector{Int}}, blocks::Vector{Array{T}}
 
-Returns: Array of size s^n.
+Returns: n dims Array of outer product of blocks, given partition of indices, part.
 
 ```jldoctest
 julia> blocks = 2-element Array{Array{Float64,N},1}[[1.0 2.0; 2.0 4.0], [1.0 2.0; 2.0 4.0]];
 
-julia> outprodblocks(4, [[1,2],[3,4]], a)
+julia> outprodblocks(IndexPart(Array{Int64,1}[[1,2],[3,4]],[2,2],4,2), blocks)
 
 2×2×2×2 Array{Float64,4}:
 [:, :, 1, 1] =
@@ -232,66 +242,85 @@ julia> outprodblocks(4, [[1,2],[3,4]], a)
  8.0  16.0
 ```
 """
-function outprodblocks{T <: AbstractFloat}(n::Int, part::Vector{Vector{Int}},
-  blocks::Vector{Array{T}})
+function outprodblocks{T <: AbstractFloat}(inp::IndexPart, blocks::Vector{Array{T}})
   s = size(blocks[1], 1)
-  npart = length(part)
-  block = (nprocs()== 1)? zeros(T, fill(s, n)...): SharedArray(T, fill(s, n)...)
-  @sync @parallel for i = 1:(s^n)
-    mulind = ind2sub((fill(s, n)...), i)
-    @inbounds block[mulind...] = mapreduce(i -> blocks[i][mulind[part[i]]...], *, 1:npart)
+  block = (nprocs()== 1)? zeros(T, fill(s, inp.nind)...): SharedArray(T, fill(s, inp.nind)...)
+  @sync @parallel for i = 1:(s^inp.nind)
+    muli = ind2sub((fill(s, inp.nind)...), i)
+    @inbounds block[muli...] =
+    mapreduce(i -> blocks[i][muli[inp.part[i]]...], *, 1:inp.npart)
   end
 Array(block)
 end
 
-"""Calculates the outer products of sigma number of cumulants for n order cumulant
-  calculation.
-
-Input: n Int, sigma Int,
-c - (vararg) cumulants of order 2, ..., n-2 in SymmetricTensor form.
-
-Output: n dims tensor in SymmetricTensor form.
 """
-function outerpodcum{T <: AbstractFloat}(outdims::Int, npart::Int, cum::SymmetricTensor{T}...)
-  parts = indpart(outdims, npart)
-  prodcum = NullableArray(Array{T, outdims}, fill(cum[1].bln, outdims)...)
-  for mulind in indices(outdims, cum[1].bln)
-    block = zeros(T, fill(cum[1].bls, outdims)...)
-    sqrblk = cum[1].sqr || !(cum[1].bln in mulind)
+    outerpodcum(retd::Int, npart::Int, cum::SymmetricTensor...)
+
+Returns retd dims outer products of npart cumulants in SymmetricTensor form.
+
+```jldoctest
+julia> cum = SymmetricTensor([1.0 2.0 3.0; 2.0 4.0 6.0; 3.0 6.0 5.0]);
+
+julia> outerpodcum(4,2,cum)
+SymmetricTensor(Nullable{Array{Float64,4}}[[3.0 6.0; 6.0 12.0]
+
+[6.0 12.0; 12.0 24.0]
+
+[6.0 12.0; 12.0 24.0]
+
+[12.0 24.0; 24.0 48.0] #NULL; #NULL #NULL]
+
+Nullable{Array{Float64,4}}[#NULL #NULL; #NULL #NULL]
+
+Nullable{Array{Float64,4}}[[9.0 18.0; 18.0 36.0]
+
+[18.0 36.0; 36.0 72.0] #NULL; #NULL #NULL]
+
+Nullable{Array{Float64,4}}[[23.0 46.0; 46.0 92.0] [45.0; 90.0]; #NULL [75.0]],2,2,3,false)
+```
+"""
+function outerpodcum{T <: AbstractFloat}(retd::Int, npart::Int, cum::SymmetricTensor{T}...)
+  parts = indpart(retd, npart)
+  prodcum = NullableArray(Array{T, retd}, fill(cum[1].bln, retd)...)
+  for muli in indices(retd, cum[1].bln)
+    block = zeros(T, fill(cum[1].bls, retd)...)
     for part in parts
-      blocks = accesscum(mulind, part, sqrblk, cum...)
-      @inbounds block += outprodblocks(outdims, part, blocks)
+      blocks = accesscum(muli, part, cum...)
+      @inbounds block += outprodblocks(part, blocks)
     end
-    if !sqrblk # cuts zeros
-      range = map(k->cum[1].bln == mulind[k]? (1:cum[1].dats% cum[1].bls): (1:cum[1].bls), 1:outdims)
-      @inbounds block = block[range...]
+    if !cum[1].sqr && cum[1].bln in muli
+      ran = map(k->cum[1].bln == muli[k]? (1:cum[1].dats% cum[1].bls): (1:cum[1].bls), 1:retd)
+      @inbounds block = block[ran...]
     end
-    @inbounds prodcum[mulind...] = block
+    @inbounds prodcum[muli...] = block
   end
   SymmetricTensor(prodcum; testdatstruct = false)
 end
 
-"""Calculates n'th cumulant.
+"""
 
-Input: X - vector of matrices of data, n int,
-c - (vararg) cumulants of order 2, ..., n-2 in SymmetricTensor form
+    cumulantn(X::Vector{Matrix}, n::Int, cum::SymmetricTensor...)
 
-Output: n th cumulant in SymmetricTensor form (dims = n)."""
-function cumulantn{T <: AbstractFloat}(X::Vector{Matrix{T}}, n::Int, c::SymmetricTensor{T}...)
+Returns n th cumulant given multivariate data stored in X and lower order cumulants
+cum
+"""
+
+function cumulantn{T <: AbstractFloat}(X::Vector{Matrix{T}}, n::Int, cum::SymmetricTensor{T}...)
   ret =  momentbs(X, n)
   for sigma in 2:floor(Int, n/2)
-    ret -= outerpodcum(n, sigma, c...)
+    ret -= outerpodcum(n, sigma, cum...)
   end
   ret
 end
 
-"""Recursive formula, calculate cumulants of order 2 - n.
+"""
 
-Input: X - matrix of rough data, n int, s - block size.
+    cumulants(X::Matrix, n::Int, bls::Int)
 
-Returns array of cumullants of order 2 - n, in SymmetricTensor form."""
-function cumulants{T <: AbstractFloat}(X::Matrix{T}, n::Int, s::Int = 2)
-  X = splitdata(center(X), s)
+Returns array of cumullants of order 2 - n, in the SymmetricTensor form.
+"""
+function cumulants{T <: AbstractFloat}(X::Matrix{T}, n::Int, bls::Int = 2)
+  X = splitdata(center(X), bls)
   ret = Array(SymmetricTensor{T}, n-1)
   for i = 2:n
     @inbounds ret[i-1] = (i < 4)? momentbs(X, i): cumulantn(X, i, ret[1:(i-3)]...)

@@ -4,7 +4,9 @@ using Cumulants
 using Distributions
 using NullableArrays
 using Iterators
-import Cumulants: indpart, momentseg, splitdata, mom_el, accesscum, outprodblocks
+import Cumulants: indpart, momentseg, splitdata, mom_el, accesscum, outprodblocks,
+ IndexPart, outerpodcum
+
 import SymmetricTensors: indices
 
 include("test_helpers/s_naive.jl")
@@ -53,20 +55,24 @@ facts("Exceptions") do
 end
 
 facts("Cumulant helper functions") do
+  indexpart = indpart(4,2)
   context("indpart") do
-    @fact indpart(4,2) --> [[[1,2],[3,4]], [[1,3],[2,4]], [[1,4],[2,3]]]
+    @fact indexpart[1].part --> [[1,2],[3,4]]
+    @fact indexpart[2].part --> [[1,3],[2,4]]
+    @fact indexpart[3].part --> [[1,4],[2,3]]
   end
   context("operation on blocks") do
     c = SymmetricTensor([1.0 2.0 3.0; 2.0 4.0 6.0; 3.0 6.0 5.0])
-    blocks = accesscum((1,1,1,1), [[1,2],[3,4]], false, c)
+    blocks = accesscum((1,1,1,1), indexpart[1], c)
     @fact blocks --> [[1.0 2.0; 2.0 4.0], [1.0 2.0; 2.0 4.0]]
-    @fact accesscum((1,1,1,2), [[1,2],[3,4]], false, c) --> [[1.0 2.0; 2.0 4.0],
+    @fact accesscum((1,1,1,2), indexpart[1], c) --> [[1.0 2.0; 2.0 4.0],
     [3.0 0.0; 6.0 0.0]]
-    @fact accesscum((1,1,1,2), [[1,4],[2,3]], false, c) --> [[3.0 0.0; 6.0 0.0],
+    @fact accesscum((1,1,1,2), indexpart[3], c) --> [[3.0 0.0; 6.0 0.0],
     [1.0 2.0; 2.0 4.0]]
-    block = outprodblocks(4, [[1,2],[3,4]], blocks)
+    block = outprodblocks(indexpart[1], blocks)
     @fact block[:,:,1,1] --> [1.0  2.0; 2.0  4.0]
     @fact block[:,:,1,2] --> [2.0  4.0; 4.0  8.0]
+    @fact outerpodcum(4,2,c).frame[1,1,1,1].value[1,1,:,] --> [3.0, 6.0, 6.0, 12.0]
   end
 end
 
