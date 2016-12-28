@@ -11,26 +11,23 @@ import SymmetricTensors: indices
 include("test_helpers/s_naive.jl")
 include("test_helpers/naivecum.jl")
 
-"""Test a time of cumulant's calculations agains
-the naive algorithm and semi naive.
-
-Input: n_max -  maximal cumulant's order, t,m - test data size, naiv, sn - use
-(naive, semi naive algorithm for time comparison), s - number of blocks
 """
 
-function test_time(n_max::Int = 4, t::Int = 1000, m::Int = 30, naiv::Bool = true,
-  sn::Bool = false, s::Int = 2)
-    data = clcopulagen(t, m);
-    for n in(3:n_max)
-        println("n = ", n)
-        @time cumulants(data, n, s);
-        if naiv
+Test a time of cumulant's calculations agains the naive algorithm and semi naive.
+"""
+function test_time(maxorder::Int = 4, realisations::Int = 1000, nvar::Int = 30,
+  compwnaiv::Bool = false, compwseminaiv::Bool = false, bls::Int = 2)
+    data = clcopulagen(realisations, nvar);
+    for order in(3:maxorder)
+        println("n = ", order)
+        @time cumulants(data, order, bls);
+        if compwnaiv
           println("naive")
-          @time naivecumulant(data, n);
+          @time naivecumulant(data, order);
         end
-        if sn
+        if compwseminaiv
           println("seminaive")
-          @time snaivecumulant(data, n);
+          @time snaivecumulant(data, order);
         end
     end
 end
