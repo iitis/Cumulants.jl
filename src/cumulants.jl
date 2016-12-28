@@ -112,7 +112,6 @@ julia> mom.frame
  #NULL                   [29.0 34.0; 34.0 40.0]
 
 ```
-
 """
 function momentbs{T <: AbstractFloat}(X::Vector{Matrix{T}}, outdims::Int)
     ret = NullableArray(Array{T, outdims}, fill(length(X), outdims)...)
@@ -244,13 +243,13 @@ julia> outprodblocks(IndexPart(Array{Int64,1}[[1,2],[3,4]],[2,2],4,2), blocks)
 """
 function outprodblocks{T <: AbstractFloat}(inp::IndexPart, blocks::Vector{Array{T}})
   s = size(blocks[1], 1)
-  block = (nprocs()== 1)? zeros(T, fill(s, inp.nind)...): SharedArray(T, fill(s, inp.nind)...)
-  @sync @parallel for i = 1:(s^inp.nind)
+  block = zeros(T, fill(s, inp.nind)...)
+  for i = 1:(s^inp.nind)
     muli = ind2sub((fill(s, inp.nind)...), i)
     @inbounds block[muli...] =
     mapreduce(i -> blocks[i][muli[inp.part[i]]...], *, 1:inp.npart)
   end
-Array(block)
+  block
 end
 
 """
@@ -318,6 +317,20 @@ end
     cumulants(X::Matrix, n::Int, bls::Int)
 
 Returns array of cumullants of order 2 - n, in the SymmetricTensor form.
+
+```
+julia> gaus_dat =  [[-0.88626   0.279571];[-0.704774  0.131896]];
+
+julia> convert(Array, cumulants(gaus_dat, 3)[2])
+2×2×2 Array{Float64,3}:
+[:, :, 1] =
+ 0.0  0.0
+ 0.0  0.0
+
+[:, :, 2] =
+ 0.0  0.0
+ 0.0  0.0
+```
 """
 function cumulants{T <: AbstractFloat}(X::Matrix{T}, n::Int, bls::Int = 2)
   X = splitdata(center(X), bls)

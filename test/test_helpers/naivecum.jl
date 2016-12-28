@@ -2,62 +2,60 @@
 srand(42)
 
 """
-Inverse of Clayton Copula generator.
 
-Input: x - data vector, theta - parameter.
+  invers_gen(x::Vector{Float64}, theta::Float64)
 
-Returns: transformed data vector.
+Returns: Vector{Float64} of data transformed using inverse of Clayton Copula
+generator with parametr theta
 """
 invers_gen(x::Vector{Float64}, theta::Float64) = (1 + theta.*x).^(-1/theta)
 
 """
-Uses Clayton copula with Weibull marginals to generate multivariate data that
-are not gaussian distributed for cumulantgs tests.
 
-Input: m - dimention of multivariete data, t - number of random data relaisations
+  clcopulagen(t::Int, m::Int)
 
 Returns: Matrix{Float} of size t*m - t realisations of m dimentional random var.
+generated from Clayton copula with Weibull marginals
 """
 function clcopulagen(t::Int, m::Int)
   theta = 1.02
   qamma_dist = Gamma(1,1/theta)
   x = rand(t)
   u = rand(t, m)
-  ret = zeros(Float64, t, m)
+  matrix = zeros(Float64, t, m)
   for i = 1:m
-    @inbounds unif_ret = invers_gen(-log(u[:,i])./quantile(qamma_dist, x), theta)
-    @inbounds ret[:,i] = quantile(Weibull(1.+0.01*i,1), unif_ret)
+    unif_ret = invers_gen(-log(u[:,i])./quantile(qamma_dist, x), theta)
+    @inbounds matrix[:,i] = quantile(Weibull(1.+0.01*i,1), unif_ret)
   end
-  ret
+  matrix
 end
 
 # --- uses the naive method to calculate cumulants 2 - 6
 
-""" Calculates the single element of moment's tensor.
+"""
 
-Input: v - vector of vectors or matrix of data to be multipled and contracted.
+  momentel(v::Vector{Vector})
 
-Returns: Float64 - element of moment's tensor.
+Returns number, the single element of moment's tensor.
 """
 momentel{T <: AbstractFloat}(v::Vector{Vector{T}}) =
   mean(mapreduce(i -> v[i], .*, 1:length(v)))
 
 """
-The element of the n'th cumulant tensor.
 
-Input: n vectors of data
+  cum_el(v::Vector{Vector})
 
-Output: Float - sum of n'th moment's element and mixed element.
+Returns number - sum of moment element and mixed element.
 """
-cum_el{T<:AbstractFloat}(d::Vector{Vector{T}}) = momentel(d) + mixed_el(d...)
+cum_el{T<:AbstractFloat}(v::Vector{Vector{T}}) = momentel(v) + mixed_el(v...)
 
 """
-The mixed element for cumulants 4-6 respectivelly.
 
-Input: 4-6 vectors of data,
+  mixed_el(v::Vector{T}...) (input of 4, 5, or 6 vectors)
 
-Output: Float - result of contraction of vectors, (permutative sum and
-  multiplication of means of elementwise products).
+Returns number, mixed element for cumulants 4-6,
+ result of contraction of vectors, (permutative sum and
+  multiplication of means of elementwise products)
 """
 function mixed_el{T<:AbstractFloat}(A::Vector{T}, B::Vector{T}, C::Vector{T}, D::Vector{T})
   -mean(A.*B)*mean(C.*D) - mean(A.*C)*mean(B.*D) - mean(A.*D)*mean(B.*C)
@@ -93,27 +91,40 @@ function mixed_el{T<:AbstractFloat}(A::Vector{T}, B::Vector{T}, C::Vector{T},
 end
 
 """
-Calculates cumulant using naive algorithm.
 
-Input: data - input data in matrix form, order - Int in [2,3,...,6], cumulant's
-order.
+  naivecumulant(data::Matrix, order)
 
-Output: cumulant, tensor of size m ^ order
+Returns cumulant, array of dims = order
+
+```jldoctest
+julia> gaus_dat =  [[-0.88626   0.279571];[-0.704774  0.131896]];
+
+julia> naivecumulant(gaus_dat, 3)
+2×2×2 Array{Float64,3}:
+[:, :, 1] =
+ 0.0  0.0
+ 0.0  0.0
+
+[:, :, 2] =
+ 0.0  0.0
+ 0.0  0.0
+
+```
 """
 function naivecumulant{T<:AbstractFloat}(data::Matrix{T}, order::Int = 4)
   data = center(data)
-  m = size(data, 2)
-  ret = zeros(T, fill(m, order)...)
+  dats = size(data, 2)
+  cumulant = zeros(T, fill(dats, order)...)
   if order in [2,3]
-    for i = 1:(m^order)
-      @inbounds ind = ind2sub((fill(m, order)...), i)
-      @inbounds ret[ind...] = momentel(map(k -> data[:,ind[k]],1:order))
+    for i = 1:(dats^order)
+      ind = ind2sub((fill(dats, order)...), i)
+      @inbounds cumulant[ind...] = momentel(map(k -> data[:,ind[k]],1:order))
     end
   elseif order in [4,5,6]
-    for i = 1:(m^order)
-      @inbounds ind = ind2sub((fill(m, order)...), i)
-      @inbounds ret[ind...] = cum_el(map(k -> data[:,ind[k]],1:order))
+    for i = 1:(dats^order)
+      ind = ind2sub((fill(dats, order)...), i)
+      @inbounds cumulant[ind...] = cum_el(map(k -> data[:,ind[k]],1:order))
     end
   end
-  return ret
+  return cumulant
 end
