@@ -8,5 +8,5 @@ module Cumulants
   #calculates moments and cumulants
   include("cumulants.jl")
 
-  export momentbs, center, cumulants
+  export momentbs, cumulants
 end

@@ -1,30 +1,5 @@
 ## following code is used to caclulate moments in SymmetricTensor form ##
 """
-  center(M::Matrix)
-
-Returns a matrix with centred columns.
-
-```jldoctest
-julia> center([[1.   2.]; [2.  4.]])
-2×2 Matrix:
- -0.5  -1.0
-  0.5   1.0
-
-```
-"""
-function center!{T<:AbstractFloat}(data::Matrix{T})
-  for i = 1:size(data, 2)
-    @inbounds data[:,i] = data[:,i]-mean(data[:,i])
-  end
-end
-
-function center{T<:AbstractFloat}(data::Matrix{T})
-  centered = copy(data)
-  center!(centered)
-  centered
-end
-
-"""
 
     splitdata(M::Matrix, s::Int)
 
@@ -91,7 +66,8 @@ julia> momentseg([[1. 2. ; 5. 6.],[3. 4. ; 7. 8.]])
 """
 function momentseg{T <: AbstractFloat}(Y::Vector{Matrix{T}})
   dims = map(j -> size(Y[j], 2), (1:length(Y)...))
-  ret = (nprocs()== 1)? zeros(T, dims): SharedArray(T, dims)
+  #ret = (nprocs()== 1)? zeros(T, dims): SharedArray(T, dims)
+  ret = SharedArray(T, dims)
   @sync @parallel for i = 1:prod(dims)
     mulind = ind2sub(dims, i)
     @inbounds ret[mulind...] = mom_el(Y, mulind)
@@ -333,7 +309,8 @@ julia> convert(Array, cumulants(gaus_dat, 3)[2])
 ```
 """
 function cumulants{T <: AbstractFloat}(X::Matrix{T}, n::Int, bls::Int = 2)
-  X = splitdata(center(X), bls)
+  X = X .- mean(X, 1)
+  X = splitdata(X, bls)
   ret = Array(SymmetricTensor{T}, n-1)
   for i = 2:n
     @inbounds ret[i-1] = (i < 4)? momentbs(X, i): cumulantn(X, i, ret[1:(i-3)]...)

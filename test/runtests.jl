@@ -16,9 +16,6 @@ include("test_helpers/naivecum.jl")
 data = clcopulagen(10, 4)
 
 facts("Helper functions") do
-  context("center") do
-    @fact center([[1.   2.]; [2.  4.]]) --> [[-0.5   -1.]; [0.5  1.]]
-  end
   context("splitdata") do
     M = [1. 2. 3. 4.; 5. 6. 7. 8.]
     @fact splitdata(M, 2) --> [[1. 2. ; 5. 6.],[3. 4. ; 7. 8.]]

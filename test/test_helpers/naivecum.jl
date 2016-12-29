@@ -112,7 +112,7 @@ julia> naivecumulant(gaus_dat, 3)
 ```
 """
 function naivecumulant{T<:AbstractFloat}(data::Matrix{T}, order::Int = 4)
-  data = center(data)
+  data = data .- mean(data, 1)
   dats = size(data, 2)
   cumulant = zeros(T, fill(dats, order)...)
   if order in [2,3]

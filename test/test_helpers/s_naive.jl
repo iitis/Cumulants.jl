@@ -1,4 +1,14 @@
 #--- seminaive formula uses partitions and reccurence, but does not use blocks
+
+"""
+
+  momentel(data::Matrix{T}, multind::Tuple)
+
+Returns number, the single element of moment's tensor.
+"""
+momentel{T <: AbstractFloat}(data::Matrix{T}, multind::Tuple) =
+  mean(mapreduce(i -> data[:,multind[i]], .*, 1:length(multind)))
+
 """
 
   partitions2(mulind::Tuple)
@@ -28,7 +38,7 @@ function moment_n{T<:AbstractFloat}(data::Matrix{T}, order::Int)
     m = size(data,2)
     ret = zeros(fill(m, order)...)
     for ind in indices(order, m)
-      @inbounds temp = momentel(map(k -> data[:,ind[k]],1:order))
+      @inbounds temp = momentel(data, ind)
       for per in collect(permutations([ind...]))
         @inbounds ret[per...] = temp
       end
@@ -93,7 +103,7 @@ julia> snaivecumulant(gaus_dat, 3)[2]
 ```
 """
 function snaivecumulant{T<:AbstractFloat}(data::Matrix{T}, maxord::Int)
-    data = center(data)
+    data = data .- mean(data, 1)
     cumulants = [Base.covm(data, 0, 1, false), moment_n(data, 3)]
     for order in 4:maxord
       cumulant = moment_n(data, order) - produ(cumulants, order)
