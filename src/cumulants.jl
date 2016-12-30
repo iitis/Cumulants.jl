@@ -66,7 +66,6 @@ julia> momentseg([[1. 2. ; 5. 6.],[3. 4. ; 7. 8.]])
 """
 function momentseg{T <: AbstractFloat}(Y::Vector{Matrix{T}})
   dims = map(j -> size(Y[j], 2), (1:length(Y)...))
-  #ret = (nprocs()== 1)? zeros(T, dims): SharedArray(T, dims)
   ret = SharedArray(T, dims)
   @sync @parallel for i = 1:prod(dims)
     mulind = ind2sub(dims, i)
@@ -76,7 +75,7 @@ function momentseg{T <: AbstractFloat}(Y::Vector{Matrix{T}})
 end
 
 """
-    momentbs(X::Vector{Matrix, n::Int)
+    moment(X::Vector{Matrix, n::Int)
 
 Returns: outdims - dimentional moment tensor in SymmetricTensor form.
 ```jldoctest
@@ -89,7 +88,7 @@ julia> mom.frame
 
 ```
 """
-function momentbs{T <: AbstractFloat}(X::Vector{Matrix{T}}, outdims::Int)
+function moments{T <: AbstractFloat}(X::Vector{Matrix{T}}, outdims::Int)
     ret = NullableArray(Array{T, outdims}, fill(length(X), outdims)...)
     for mulind in indices(outdims, length(X))
       Y = map(k -> X[mulind[k]], 1:outdims)
@@ -281,7 +280,7 @@ cum
 """
 
 function cumulantn{T <: AbstractFloat}(X::Vector{Matrix{T}}, n::Int, cum::SymmetricTensor{T}...)
-  ret =  momentbs(X, n)
+  ret =  moments(X, n)
   for sigma in 2:floor(Int, n/2)
     ret -= outerpodcum(n, sigma, cum...)
   end
@@ -313,7 +312,7 @@ function cumulants{T <: AbstractFloat}(X::Matrix{T}, n::Int, bls::Int = 2)
   X = splitdata(X, bls)
   ret = Array(SymmetricTensor{T}, n-1)
   for i = 2:n
-    @inbounds ret[i-1] = (i < 4)? momentbs(X, i): cumulantn(X, i, ret[1:(i-3)]...)
+    @inbounds ret[i-1] = (i < 4)? moments(X, i): cumulantn(X, i, ret[1:(i-3)]...)
   end
   ret
 end

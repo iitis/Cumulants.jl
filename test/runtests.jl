@@ -29,15 +29,15 @@ facts("Helper functions") do
 end
 facts("Moments") do
   context("2") do
-    mom = momentbs([[1. 2. ; 5. 6.],[3. 4. ; 7. 8.]], 2).frame
+    mom = moments([[1. 2. ; 5. 6.],[3. 4. ; 7. 8.]], 2).frame
     @fact mom[1,2].value --> [19.0 22.0; 24.0 28.0]
   end
   d = splitdata(data, 2)
   context("3") do
-    @fact convert(Array, momentbs(d, 3)) --> roughly(moment_n(data, 3))
+    @fact convert(Array, moments(d, 3)) --> roughly(moment_n(data, 3))
   end
   context("4") do
-    @fact convert(Array, momentbs(d, 4)) --> roughly(moment_n(data, 4))
+    @fact convert(Array, moments(d, 4)) --> roughly(moment_n(data, 4))
   end
 end
 
