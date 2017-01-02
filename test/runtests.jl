@@ -5,7 +5,7 @@ using Distributions
 using NullableArrays
 using Iterators
 import Cumulants: indpart, momentseg, splitdata, mom_el, accesscum, outprodblocks,
- IndexPart, outerpodcum
+ IndexPart, outerpodcum, moments, moment
 
 import SymmetricTensors: indices
 
@@ -27,7 +27,7 @@ facts("Helper functions") do
     @fact momentseg([[1. 2.; 5. 6.],[3. 4.; 7. 8.]])-->[[19.0  22.0];[24.0  28.0]]
   end
 end
-facts("Moments") do
+facts("Moments on vec of matrices") do
   context("2") do
     mom = moments([[1. 2. ; 5. 6.],[3. 4. ; 7. 8.]], 2).frame
     @fact mom[1,2].value --> [19.0 22.0; 24.0 28.0]
@@ -38,6 +38,15 @@ facts("Moments") do
   end
   context("4") do
     @fact convert(Array, moments(d, 4)) --> roughly(moment_n(data, 4))
+  end
+end
+
+facts("Moments on data") do
+  context("3") do
+    @fact convert(Array, moment(data, 3)) --> roughly(moment_n(data, 3))
+  end
+  context("4") do
+    @fact convert(Array, moment(data, 4)) --> roughly(moment_n(data, 4))
   end
 end
 

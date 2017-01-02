@@ -75,7 +75,7 @@ function momentseg{T <: AbstractFloat}(Y::Vector{Matrix{T}})
 end
 
 """
-    moment(X::Vector{Matrix, n::Int)
+    moments(X::Vector{Matrix, n::Int)
 
 Returns: outdims - dimentional moment tensor in SymmetricTensor form.
 ```jldoctest
@@ -95,6 +95,16 @@ function moments{T <: AbstractFloat}(X::Vector{Matrix{T}}, outdims::Int)
       @inbounds ret[mulind...] = momentseg(Y)
     end
     SymmetricTensor(ret; testdatstruct = false)
+end
+
+"""
+    moment(X::Matrix}, n::Int, bls::Int - block size)
+
+Returns: outdims - dimentional moment tensor in SymmetricTensor form.
+"""
+function moment{T <: AbstractFloat}(X::Matrix{T}, outdims::Int, bls::Int = 2)
+  X = splitdata(X, bls)
+  moments(X, outdims)
 end
 
 # ---- following code is used to caclulate cumulants in SymmetricTensor form----
