@@ -11,23 +11,23 @@ momentel{T <: AbstractFloat}(data::Matrix{T}, multind::Tuple) =
 
 """
 
-  partitions2(mulind::Tuple)
+  indpart(n::Int)
 
-Returns vector of all set partitions of given multiindex
+  Returns vector of, that includes all partitions of set [1, 2, ..., n]
+  into subests of size > 1 and < n
+
 """
 
-function partitions2(mulind::Tuple)
+function part(n::Int)
     parts = Vector{Vector{Int}}[]
-    n = length(mulind)
-    for part in partitions([mulind...])
-      s = map(length, part)
-      if !((1 in s) | (n in s))
+    for part in partitions(1:n)
+      subsetslen = map(length, part)
+      if !((1 in subsetslen) | (n in subsetslen))
         @inbounds push!(parts, part)
       end
     end
     return parts
 end
-
 """
 
     moment_n(data::Matrix, order::Int)
@@ -47,17 +47,19 @@ function moment_n{T<:AbstractFloat}(data::Matrix{T}, order::Int)
 end
 
 """
-    calculate_el(cum::Vector{Array{T}}, mulind::Tuple)
+    calculate_el(cum::Vector{Array{T}}, mulind::Tuple,
+      parts::Vector{Vector{Vector{Int}}})
 
-Returns number, element of the sum of products of lower cumulants at given multi-index
+Returns number, element of the sum of products of lower cumulants at given
+ multi-index and given ste of its partitions
 """
-function calculate_el{T<:AbstractFloat}(cum::Vector{Array{T}}, mulind::Tuple)
-    part = partitions2(mulind)
+function calculate_el{T<:AbstractFloat}(cum::Vector{Array{T}}, mulind::Tuple,
+  parts::Vector{Vector{Vector{Int}}})
     sum = 0.
-    for k = 1:length(part)
+    for k = 1:length(parts)
         prod = 1.
-        for el in part[k]
-            @inbounds prod*= cum[size(el,1)-1][el...]
+        for el in parts[k]
+            @inbounds prod*= cum[size(el,1)-1][mulind[el]...]
         end
         sum += prod
     end
@@ -73,8 +75,9 @@ Returns order dims Array, the sum of products of lower cumulants
 function produ{T<:AbstractFloat}(cumulants::Vector{Array{T}}, order::Int)
     dats = size(cumulants[1], 2)
     sumofprod = zeros(fill(dats, order)...)
+    parts = part(order)
     for ind in indices(order, dats)
-      pyramid = calculate_el(cumulants, ind)
+      pyramid = calculate_el(cumulants, ind, parts)
       for per in collect(permutations([ind...]))
         @inbounds sumofprod[per...] = pyramid
       end
