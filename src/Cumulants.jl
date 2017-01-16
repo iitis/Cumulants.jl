@@ -9,5 +9,5 @@ module Cumulants
   #calculates moments and cumulants
   include("cumulants.jl")
 
-  export moment, cumulants
+  export moment, cumulants, getcumulant
 end
