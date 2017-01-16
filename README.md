@@ -30,7 +30,8 @@ For multivariate data takes matrix, where columns numerates marginal variables a
 numertates their realisations, bls is an optional Int that determines a size 
 of blocks in `SymmetricTensors` type.
 
-```julia> data = reshape(collect(1.:15.),(5,3))
+```julia
+julia> data = reshape(collect(1.:15.),(5,3))
 5×3 Array{Float64,2}:
  1.0   6.0  11.0
  2.0   7.0  12.0
@@ -39,7 +40,8 @@ of blocks in `SymmetricTensors` type.
  5.0  10.0  15.0
 ```
 
-```julia> m = moment(data, 3)
+```julia
+julia> m = moment(data, 3)
 SymmetricTensors.SymmetricTensor{Float64,3}(Nullable{Array{Float64,3}}[[45.0 100.0; 100.0 230.0]
 
 [100.0 230.0; 230.0 560.0] #NULL; #NULL #NULL]
@@ -48,7 +50,8 @@ Nullable{Array{Float64,3}}[[155.0 360.0; 360.0 890.0] [565.0; 1420.0]; #NULL [22
 
 ```
 
-```julia> convert(Array, m)
+```julia
+julia> convert(Array, m)
 3×3×3 Array{Float64,3}:
 [:, :, 1] =
   45.0  100.0  155.0
