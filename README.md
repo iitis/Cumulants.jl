@@ -1,7 +1,7 @@
 # Cumulants.jl
 
 Calculates Cummulant tensors of any order for multivariate data. 
-Functions always return tensor or array of tensors in `SymmetricTensors` type, to convert to array, run:
+Functions always return tensor or array of tensors in `SymmetricTensors` type. Raquires SymmetricTensors.jl "https://github.com/kdomino/SymmetricTensors.jl". To convert to array, run:
 
 ```julia
 julia> convert(Array, data::SymmetricTensors{T})
