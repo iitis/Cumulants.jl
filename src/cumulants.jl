@@ -66,7 +66,7 @@ julia> momentseg([[1. 2. ; 5. 6.],[3. 4. ; 7. 8.]])
 """
 function momentseg{T <: AbstractFloat}(Y::Vector{Matrix{T}})
   dims = map(j -> size(Y[j], 2), (1:length(Y)...))
-  ret = SharedArray(T, dims)
+  ret = (nprocs()==1)? zeros(T, dims): SharedArray(T, dims)
   @sync @parallel for i = 1:prod(dims)
     mulind = ind2sub(dims, i)
     @inbounds ret[mulind...] = mom_el(Y, mulind)
@@ -325,4 +325,18 @@ function cumulants{T <: AbstractFloat}(X::Matrix{T}, n::Int, bls::Int = 2)
     @inbounds ret[i-1] = (i < 4)? moments(X, i): cumulantn(X, i, ret[1:(i-3)]...)
   end
   ret
+end
+
+"""
+
+    getcumulant(cum::Vector{SymmetricTensor{T}}, i::Int)
+
+Returns cumulant of given order in SymmetricTensor type
+"""
+function getcumulant{T <: AbstractFloat}(cum::Vector{SymmetricTensor{T}}, order::Int)
+  if order == 1
+    throw(BoundsError("mean vector not stored"))
+  else
+    return cum[order-1]
+  end
 end

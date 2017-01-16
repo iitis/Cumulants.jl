@@ -4,7 +4,7 @@ Calculates Cummulant tensors of any order for multivariate data.
 Functions always return tensor or array of tensors in `SymmetricTensors` type. Raquires SymmetricTensors.jl "https://github.com/kdomino/SymmetricTensors.jl". To convert to array, run:
 
 ```julia
-julia> convert(Array, data::SymmetricTensors{T})
+julia> convert(Array, data::SymmetricTensors{T, N})
 ```
 
 As of 01/01/2017 "https://github.com/kdomino" is the lead maintainer of this package.
@@ -119,6 +119,39 @@ julia> convert(Array, c[1])
  0.0  0.0  0.0
  0.0  0.0  0.0
  0.0  0.0  0.0 
- ```
+```
 
+To access cumulant of given order, use
+
+```julia
+julia> getcumulant(c::Vector{SymmetricTensor}, order::Int)
+```
+
+```julia
+julia> convert(Array, getcumulant(c, 2))
+3×3 Array{Float64,2}:
+ 2.0  2.0  2.0
+ 2.0  2.0  2.0
+ 2.0  2.0  2.0
+ 
+ julia> convert(Array, getcumulant(c, 3))
+3×3×3 Array{Float64,3}:
+[:, :, 1] =
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+
+[:, :, 2] =
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+
+[:, :, 3] =
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+ 
+ julia> convert(Array, getcumulant(c, 1))
+ERROR: BoundsError: attempt to access "mean vector not stored"
+```
 
