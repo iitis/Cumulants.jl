@@ -7,6 +7,7 @@ Functions always return tensor or array of tensors in `SymmetricTensors` type. R
 julia> convert(Array, data::SymmetricTensors{T})
 ```
 
+As of 01/01/2017 "https://github.com/kdomino" is the lead maintainer of this package.
 
 ## Instalation
 
@@ -20,6 +21,7 @@ to install the files.  Julia 0.5 or later required.
 
 
 ## Functions
+### Moment
 
 ```julia
 julia> moment(data::Matrix{T}, order::Int, bls::Int = 2)
@@ -49,6 +51,7 @@ SymmetricTensors.SymmetricTensor{Float64,3}(Nullable{Array{Float64,3}}[[45.0 100
 Nullable{Array{Float64,3}}[[155.0 360.0; 360.0 890.0] [565.0; 1420.0]; #NULL [2275.0]],2,2,3,false)
 
 ```
+To convert to array just run convert
 
 ```julia
 julia> convert(Array, m)
@@ -68,3 +71,54 @@ julia> convert(Array, m)
  360.0   890.0  1420.0                                                                                                                                               
  565.0  1420.0  2275.0
  ```
+ 
+ ### Cumulants
+ 
+ ```julia
+julia> cumulants(data::Matrix{T}, maxord::Int, bls::Int = 2)
+```
+
+Returns a vector of tensors of cumulants of order 2,3,...,maxord of multivariate data.
+Input the same as for the moment function. Returns a vector of `SymmetricTensors`.
+
+```julia
+julia> c = cumulants(data, 3);
+
+julia> c[1]
+SymmetricTensors.SymmetricTensor{Float64,2}(Nullable{Array{Float64,2}}[[2.0 2.0; 2.0 2.0] [2.0; 2.0]; #NULL [2.0]],2,2,3,false)
+
+julia> c[2]
+SymmetricTensors.SymmetricTensor{Float64,3}(Nullable{Array{Float64,3}}[[0.0 0.0; 0.0 0.0]
+
+[0.0 0.0; 0.0 0.0] #NULL; #NULL #NULL]
+
+Nullable{Array{Float64,3}}[[0.0 0.0; 0.0 0.0] [0.0; 0.0]; #NULL [0.0]],2,2,3,false)
+```
+To convert to array given element ot the vector c, just run:
+
+```julia
+julia> convert(Array, c[1])
+3×3 Array{Float64,2}:
+ 2.0  2.0  2.0
+ 2.0  2.0  2.0
+ 2.0  2.0  2.0
+
+ julia> convert(Array, c[2])
+3×3×3 Array{Float64,3}:
+[:, :, 1] =
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+
+[:, :, 2] =
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+
+[:, :, 3] =
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0
+ 0.0  0.0  0.0 
+ ```
+
+
