@@ -9,9 +9,9 @@ import Cumulants: indpart, momentseg, splitdata, mom_el, accesscum, outprodblock
 
 import SymmetricTensors: indices
 
-include("test_helpers/s_naive.jl")
-include("test_helpers/naivecum.jl")
-
+include("test_helpers/pyramidcumulants.jl")
+include("test_helpers/naivecumulants.jl")
+include("test_helpers/mom2cum.jl")
 
 data = clcopulagen(10, 4)
 
@@ -107,8 +107,8 @@ facts("Cumulants vs naive implementation") do
   end
 end
 
-facts("test semi-naive against gaussian") do
-  cn2, cn3, cn4, cn5, cn6, cn7, cn8 = snaivecumulant(gaus_dat, 8)
+facts("test pyramid implementation") do
+  cn2, cn3, cn4, cn5, cn6, cn7, cn8 = pyramidcumulants(gaus_dat, 8)
   @fact cn2 --> roughly(naivecumulant(gaus_dat, 2))
   @fact cn3 --> roughly(zeros(Float64, 2,2,2))
   @fact cn4 --> roughly(zeros(Float64, 2,2,2,2), 1e-3)
@@ -118,8 +118,19 @@ facts("test semi-naive against gaussian") do
   @fact cn8 --> roughly(zeros(Float64, 2,2,2,2,2,2,2,2), 1e-5)
 end
 
-cn2, cn3, cn4, cn5, cn6, cn7, cn8 = snaivecumulant(data[:, 1:2], 8)
-facts("Cumulants vs semi-naive square") do
+cn2, cn3, cn4, cn5, cn6, cn7, cn8 = pyramidcumulants(data[:, 1:2], 8)
+facts("Tests implementation from raw moments") do
+  cm2, cm3, cm4, cm5, cm6, cm7, cm8 = mom2cums(data[:, 1:2], 8)
+  @fact cm2 --> roughly(cn2)
+  @fact cm3 --> roughly(cn3)
+  @fact cm4 --> roughly(cn4)
+  @fact cm5 --> roughly(cn5)
+  @fact cm6 --> roughly(cn6)
+  @fact cm7 --> roughly(cn7)
+  @fact cm8 --> roughly(cn8)
+end
+
+facts("Cumulants vs pyramid implementation square blocks") do
   c2, c3, c4, c5, c6, c7, c8 = cumulants(data[:, 1:2], 8, 2)
   @fact convert(Array, cumulants(gaus_dat, 3)[2]) --> roughly(zeros(Float64, 2,2,2))
   @fact convert(Array, c2) --> roughly(cn2)
