@@ -1,17 +1,14 @@
 using FactCheck
 using SymmetricTensors
-using Cumulants
+push!(LOAD_PATH, "/home/krzysztof/Dokumenty/badania/cum_calc/Cumulants/src/")
+using Cumulants1
 using Distributions
 using NullableArrays
 using Iterators
-import Cumulants: indpart, momentseg, splitdata, mom_el, accesscum, outprodblocks,
- IndexPart, outerpodcum, moments, moment
+import Cumulants1: indpart, momentseg, splitdata, mom_el, accesscum, outprodblocks,
+ IndexPart, outerpodcum, moments, clcopulagen, moment_n
 
 import SymmetricTensors: indices
-
-include("test_helpers/pyramidcumulants.jl")
-include("test_helpers/naivecumulants.jl")
-include("test_helpers/mom2cum.jl")
 
 data = clcopulagen(10, 4)
 

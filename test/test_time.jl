@@ -1,13 +1,14 @@
-using Cumulants
+#!/usr/bin/env julia
+
+push!(LOAD_PATH, "/home/krzysztof/Dokumenty/badania/cum_calc/Cumulants/src/")
+using Cumulants1
 using Distributions
-using PyPlot
 using PyCall
+@pyimport matplotlib as mpl
+mpl.use("Agg")
+using PyPlot
 using NPZ
 import SymmetricTensors: indices
-
-include("test_helpers/naivecumulants.jl")
-include("test_helpers/pyramidcumulants.jl")
-include("test_helpers/mom2cum.jl")
 
 """
   pltspeedup(comptimes::Array{Float}, M::Int, n::Vector{Int}, T::Vector{Int}, label::String)
@@ -17,7 +18,6 @@ Returns a figure in .eps format of the computional speedup of cumulants function
 
 function pltspeedup(comptimes::Array{Float64}, M::Int, n::Vector{Int}, T::Vector{Int},
    label::String)
-  @pyimport matplotlib as mpl
   mpl.rc("text", usetex=true)
   mpl.rc("font", family="serif", size = 12)
   fig, ax = subplots(figsize = (4.6, 4.6))
@@ -81,7 +81,7 @@ M is cumulant's order, n vector of numbers of variables, T vector of numbers of
 their realisations.
 """
 function plotcomptime(ccalc::Function = mom2cums, M::Int = 4,
-  T::Vector{Int} = [1800, 2000], n::Vector{Int} = [18, 20], cash::Bool = false)
+  T::Vector{Int} = [5000], n::Vector{Int} = [28, 30], cash::Bool = false)
   ccalc in [naivecumulant, mom2cums, pyramidcumulants] || throw(AssertionError("function not: naivecumulant, mom2cums, pyramidcumulants"))
   filename = string(ccalc)*string(M)*string(T)*string(n)*".npz"
   if isfile(filename)*cash
@@ -95,4 +95,10 @@ function plotcomptime(ccalc::Function = mom2cums, M::Int = 4,
   pltspeedup(compt, M, n, T, string(ccalc))
 end
 
-plotcomptime()
+
+function main()
+  plotcomptime(mom2cums, 4)
+  plotcomptime(naivecumulant, 4)
+end
+
+main()
