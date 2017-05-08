@@ -25,6 +25,7 @@ function pltspeedup(comptimes::Array{Float64}, M::Int, n::Vector{Int}, T::Vector
     t = T[i]
     ax[:plot](n, comptimes[:,i], "--x", label= "M = $M, T = $t")
   end
+  PyPlot.title("$label")
   ax[:set_ylabel]("speedup of computional time")
   ax[:set_xlabel]("tensor size")
   ax[:legend](fontsize = 12, loc = 4, ncol = 1)
@@ -39,10 +40,12 @@ given cumulant's order M and cumulats calculation function ccalc, following
 functions are availavle: cumulants, naivecumulant, mom2cums, pyramidcumulants
 """
 
-function comptime(data::Matrix{Float64}, ccalcf::Function = cumulants, M::Int = 4)
-  ccalcf(data[1:4, 1:4], M)
+function comptime(data::Matrix{Float64}, ccalc::Function = cumulants, M::Int = 4)
+  ccalc in [cumulants, naivecumulant, mom2cums, pyramidcumulants] ||
+   throw(AssertionError("function not: cumulants, naivecumulant, mom2cums, pyramidcumulants"))
+  ccalc(data[1:4, 1:4], M)
   t = time_ns()
-  ccalcf(data, M)
+  ccalc(data, M)
   Float64(time_ns()-t)/1.0e9
 end
 
@@ -56,6 +59,7 @@ given cumulant's order M, number of variables n, number of data realisation T,
 """
 
 function compspeedups(ccalc::Function, M::Int, T::Vector{Int}, n::Vector{Int})
+  ccalc in [naivecumulant, mom2cums, pyramidcumulants] || throw(AssertionError("function not: naivecumulant, mom2cums, pyramidcumulants"))
   compt = zeros(length(n), length(T))
   for i in 1:length(T)
     for j in 1:length(n)
@@ -76,8 +80,9 @@ mom2cums, pyramidcumulants.
 M is cumulant's order, n vector of numbers of variables, T vector of numbers of
 their realisations.
 """
-function plotcomptime(ccalc::Function = naivecumulant, M::Int = 4,
-  T::Vector{Int} = [2200, 2400], n::Vector{Int} = [18, 20], cash::Bool = false)
+function plotcomptime(ccalc::Function = mom2cums, M::Int = 4,
+  T::Vector{Int} = [1800, 2000], n::Vector{Int} = [18, 20], cash::Bool = false)
+  ccalc in [naivecumulant, mom2cums, pyramidcumulants] || throw(AssertionError("function not: naivecumulant, mom2cums, pyramidcumulants"))
   filename = string(ccalc)*string(M)*string(T)*string(n)*".npz"
   if isfile(filename)*cash
     compt = npzread(filename)
@@ -89,3 +94,5 @@ function plotcomptime(ccalc::Function = naivecumulant, M::Int = 4,
   end
   pltspeedup(compt, M, n, T, string(ccalc))
 end
+
+plotcomptime()
