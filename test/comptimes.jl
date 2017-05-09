@@ -8,6 +8,7 @@ using PyCall
 mpl.use("Agg")
 using PyPlot
 using NPZ
+using ArgParse
 import SymmetricTensors: indices
 
 """
@@ -40,9 +41,7 @@ given cumulant's order M and cumulats calculation function ccalc, following
 functions are availavle: cumulants, naivecumulant, mom2cums, pyramidcumulants
 """
 
-function comptime(data::Matrix{Float64}, ccalc::Function = cumulants, M::Int = 4)
-  ccalc in [cumulants, naivecumulant, mom2cums, pyramidcumulants] ||
-   throw(AssertionError("function not: cumulants, naivecumulant, mom2cums, pyramidcumulants"))
+function comptime(data::Matrix{Float64}, ccalc::Function, M::Int)
   ccalc(data[1:4, 1:4], M)
   t = time_ns()
   ccalc(data, M)
@@ -59,7 +58,6 @@ given cumulant's order M, number of variables n, number of data realisation T,
 """
 
 function compspeedups(ccalc::Function, M::Int, T::Vector{Int}, n::Vector{Int})
-  ccalc in [naivecumulant, mom2cums, pyramidcumulants] || throw(AssertionError("function not: naivecumulant, mom2cums, pyramidcumulants"))
   compt = zeros(length(n), length(T))
   for i in 1:length(T)
     for j in 1:length(n)
@@ -80,9 +78,7 @@ mom2cums, pyramidcumulants.
 M is cumulant's order, n vector of numbers of variables, T vector of numbers of
 their realisations.
 """
-function plotcomptime(ccalc::Function = mom2cums, M::Int = 4,
-  T::Vector{Int} = [5000], n::Vector{Int} = [28, 30], cash::Bool = false)
-  ccalc in [naivecumulant, mom2cums, pyramidcumulants] || throw(AssertionError("function not: naivecumulant, mom2cums, pyramidcumulants"))
+function plotcomptime(ccalc::Function, M::Int, T::Vector{Int}, n::Vector{Int}, cash::Bool)
   filename = string(ccalc)*string(M)*string(T)*string(n)*".npz"
   if isfile(filename)*cash
     compt = npzread(filename)
@@ -95,10 +91,42 @@ function plotcomptime(ccalc::Function = mom2cums, M::Int = 4,
   pltspeedup(compt, M, n, T, string(ccalc))
 end
 
+"""
+  main(args)
 
-function main()
-  plotcomptime(mom2cums, 4)
-  plotcomptime(naivecumulant, 4)
+Returns plots of the speedup of using cumulants function vs. naivecumulants and
+mom2cums implementations. Takes optional arguments from bash
+"""
+function main(args)
+  s = ArgParseSettings("description")
+  @add_arg_table s begin
+      "--order", "-M"
+        help = "M, the order of cumulant, ndims of cumulant's tensor"
+        default = 4
+        arg_type = Int
+      "--nvar", "-n"
+        nargs = '*'
+        default = [22, 24]
+        help = "n, numbers of marginal variables"
+        arg_type = Int
+      "--dats", "-T"
+        help = "T, numbers of data records"
+        nargs = '*'
+        default = [4000]
+        arg_type = Int
+      "--cash", "-c"
+        help = "indicates if computional times should be saved in a file or read
+          from a file"
+        default = false
+        arg_type = Bool
+    end
+  parsed_args = parse_args(s)
+  M = parsed_args["order"]
+  n = parsed_args["nvar"]
+  T = parsed_args["dats"]
+  cash = parsed_args["cash"]
+  plotcomptime(mom2cums, M, T, n, cash)
+  plotcomptime(naivecumulant, M, T, n, cash)
 end
 
-main()
+main(ARGS)
