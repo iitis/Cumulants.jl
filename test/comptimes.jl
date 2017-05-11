@@ -1,7 +1,6 @@
 #!/usr/bin/env julia
 
-push!(LOAD_PATH, "/home/krzysztof/Dokumenty/badania/cum_calc/Cumulants/src/")
-using Cumulants1
+using Cumulants
 using Distributions
 using PyCall
 @pyimport matplotlib as mpl
@@ -30,7 +29,9 @@ function pltspeedup(comptimes::Array{Float64}, M::Int, n::Vector{Int}, T::Vector
   ax[:set_ylabel]("speedup of computional time")
   ax[:set_xlabel]("tensor size")
   ax[:legend](fontsize = 12, loc = 4, ncol = 1)
-  fig[:savefig]("$label$M$T$n.eps")
+  name = replace("$label$M$T$n", "[", "_")
+  name = replace(name, "]", "")
+  fig[:savefig](name*".eps")
 end
 
 """
@@ -45,6 +46,14 @@ function comptime(data::Matrix{Float64}, ccalc::Function, M::Int)
   ccalc(data[1:4, 1:4], M)
   t = time_ns()
   ccalc(data, M)
+  Float64(time_ns()-t)/1.0e9
+end
+
+
+function comptime(data::Matrix{Float64}, M::Int)
+  cumulants(data[1:4, 1:4], M, 3)
+  t = time_ns()
+  cumulants(data, M, 3)
   Float64(time_ns()-t)/1.0e9
 end
 
@@ -79,7 +88,8 @@ M is cumulant's order, n vector of numbers of variables, T vector of numbers of
 their realisations.
 """
 function plotcomptime(ccalc::Function, M::Int, T::Vector{Int}, n::Vector{Int}, cash::Bool)
-  filename = string(ccalc)*string(M)*string(T)*string(n)*".npz"
+  filename = replace(string(ccalc)*string(M)*string(T)*string(n)*".npz", "[", "_")
+  filename = replace(filename, "]", "")
   if isfile(filename)*cash
     compt = npzread(filename)
   else

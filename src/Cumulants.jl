@@ -1,4 +1,4 @@
-module Cumulants1
+module Cumulants
   using SymmetricTensors
   using NullableArrays
   using Iterators

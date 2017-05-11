@@ -1,11 +1,10 @@
 using FactCheck
 using SymmetricTensors
-push!(LOAD_PATH, "/home/krzysztof/Dokumenty/badania/cum_calc/Cumulants/src/")
-using Cumulants1
+using Cumulants
 using Distributions
 using NullableArrays
 using Iterators
-import Cumulants1: indpart, momentseg, splitdata, mom_el, accesscum, outprodblocks,
+import Cumulants: indpart, momentseg, splitdata, mom_el, accesscum, outprodblocks,
  IndexPart, outerpodcum, moments, clcopulagen, moment_n
 
 import SymmetricTensors: indices
