@@ -13,16 +13,25 @@ momentel{T <: AbstractFloat}(data::Matrix{T}, multind::Tuple) =
 
   indpart(n::Int)
 
-  Returns vector of, that includes all partitions of set [1, 2, ..., n]
-  into subests of size > 1 and < n
+Returns Vector{Vector{Vector}} that includes all partitions of set [1, 2, ..., m]
+into subests of size > 1 and < m
 
+```jldoctest
+julia> M =  [[-0.88626   0.279571];[-0.704774  0.131896]];
+
+julia> part(4)
+3-element Array{Array{Array{Int64,1},1},1}:
+ Array{Int64,1}[[1,2],[3,4]]
+ Array{Int64,1}[[1,3],[2,4]]
+ Array{Int64,1}[[1,4],[2,3]]
+```
 """
 
-function part(n::Int)
+function part(m::Int)
     parts = Vector{Vector{Int}}[]
-    for part in partitions(1:n)
+    for part in partitions(1:m)
       subsetslen = map(length, part)
-      if !((1 in subsetslen) | (n in subsetslen))
+      if !((1 in subsetslen) | (m in subsetslen))
         @inbounds push!(parts, part)
       end
     end
@@ -30,15 +39,29 @@ function part(n::Int)
 end
 """
 
-    moment_n(data::Matrix, order::Int)
+    pyramidmoment(data::Matrix, m::Int)
 
-Returns n'th moment in form of order dims array
+Returns Array{Float, m}, the m'th moment tensor
+
+```jldoctest
+julia> M =  [[-0.88626   0.279571];[-0.704774  0.131896]];
+
+julia> pyramidmoment(M, 3)
+2×2×2 Array{Float64,3}:
+[:, :, 1] =
+ -0.523092   0.142552
+  0.142552  -0.0407653
+
+[:, :, 2] =
+  0.142552   -0.0407653
+ -0.0407653   0.0120729
+```
 """
-function moment_n{T<:AbstractFloat}(data::Matrix{T}, order::Int)
-    m = size(data,2)
-    ret = zeros(fill(m, order)...)
-    for ind in indices(order, m)
-      @inbounds temp = momentel(data, ind)
+function pyramidmoment{T<:AbstractFloat}(data::Matrix{T}, m::Int)
+    n = size(data,2)
+    ret = zeros(fill(n, m)...)
+    for ind in indices(m, n)
+      @inbounds temp = momel(data, ind)
       for per in collect(permutations([ind...]))
         @inbounds ret[per...] = temp
       end
@@ -47,13 +70,12 @@ function moment_n{T<:AbstractFloat}(data::Matrix{T}, order::Int)
 end
 
 """
-    calculate_el(cum::Vector{Array{T}}, mulind::Tuple,
-      parts::Vector{Vector{Vector{Int}}})
+    mixedel(cum::Vector{Array{T}}, mulind::Tuple, parts::Vector{Vector{Vector{Int}}})
 
-Returns number, element of the sum of products of lower cumulants at given
- multi-index and given ste of its partitions
+Returns Float, element of the sum of products of lower cumulants at given
+ multi-index and set of its partitions
 """
-function calculate_el{T<:AbstractFloat}(cum::Vector{Array{T}}, mulind::Tuple,
+function mixedel{T<:AbstractFloat}(cum::Vector{Array{T}}, mulind::Tuple,
   parts::Vector{Vector{Vector{Int}}})
     sum = 0.
     for k = 1:length(parts)
@@ -68,16 +90,16 @@ end
 
 """
 
-  produ(cumulants::Vector{Array}, order::Int)
+  mixedarr(cumulants::Vector{Array}, m::Int)
 
-Returns order dims Array, the sum of products of lower cumulants
+Returns Array{Float, m}, the mixed array (sum of products of lower cumulants)
 """
-function produ{T<:AbstractFloat}(cumulants::Vector{Array{T}}, order::Int)
-    dats = size(cumulants[1], 2)
-    sumofprod = zeros(fill(dats, order)...)
-    parts = part(order)
-    for ind in indices(order, dats)
-      pyramid = calculate_el(cumulants, ind, parts)
+function mixedarr{T<:AbstractFloat}(cumulants::Vector{Array{T}}, m::Int)
+    n = size(cumulants[1], 2)
+    sumofprod = zeros(fill(n, m)...)
+    parts = part(m)
+    for ind in indices(m, n)
+      pyramid = mixedel(cumulants, ind, parts)
       for per in collect(permutations([ind...]))
         @inbounds sumofprod[per...] = pyramid
       end
@@ -87,14 +109,15 @@ end
 
 """
 
-  snaivecumulant(data::Matrix, maxord::Int)
+  pyramidcumulants(X::Matrix{Float}, m::Int)
 
-Returns vector of arrays of cumulants of dims / order 2 - maxord
+Returns [Array{Float, 2}, ..., Array{Float, m}], vector co cumulants tensors of order
+2, .., m
 
 ```
-julia> gaus_dat =  [[-0.88626   0.279571];[-0.704774  0.131896]];
+julia> M =  [[-0.88626   0.279571];[-0.704774  0.131896]];
 
-julia> pyramidcumulants(gaus_dat, 3)[2]
+julia> pyramidcumulants(M, 3)[2]
 2×2×2 Array{Float64,3}:
 [:, :, 1] =
  0.0  0.0
@@ -105,11 +128,11 @@ julia> pyramidcumulants(gaus_dat, 3)[2]
  0.0  0.0
 ```
 """
-function pyramidcumulants{T<:AbstractFloat}(data::Matrix{T}, maxord::Int)
-    data = data .- mean(data, 1)
-    cumulants = [Base.covm(data, 0, 1, false), moment_n(data, 3)]
-    for order in 4:maxord
-      cumulant = moment_n(data, order) - produ(cumulants, order)
+function pyramidcumulants{T<:AbstractFloat}(X::Matrix{T}, m::Int)
+    X = X .- mean(X, 1)
+    cumulants = [Base.covm(X, 0, 1, false), pyramidmoment(X, 3)]
+    for i in 4:m
+      cumulant = pyramidmoment(X, i) - mixedarr(cumulants, i)
       push!(cumulants, cumulant)
     end
     cumulants

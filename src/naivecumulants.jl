@@ -1,105 +1,134 @@
-# --- copula based non Gaussian data generator
-srand(42)
+# --- calculates moment's tensor
+"""
+
+  momel(X::Matrix{Float}, ind::Tuple)
+
+Returns Float, an element of moment's tensor at ind multiindex
+
+```jldoctest
+julia> M =  [[-0.88626   0.279571];[-0.704774  0.131896]];
+
+julia> momel(M, (1,1,1,1))
+0.4318298020613279
+
+```
+"""
+momel{T <: AbstractFloat}(X::Matrix{T}, ind::Tuple) =
+    mean(mapreduce(i::Int -> X[:,ind[i]], .*, 1:length(ind)))
+
 
 """
 
-  invers_gen(x::Vector{Float64}, theta::Float64)
+  naivemoment(data::Matrix, m)
 
-Returns: Vector{Float64} of data transformed using inverse of Clayton Copula
-generator with parametr theta
+Returns Array{Float, m} the m'th moment tensor
+
+```jldoctest
+julia> M =  [[-0.88626   0.279571];[-0.704774  0.131896]];
+
+julia> naivemoment(M, 3)
+2×2×2 Array{Float64,3}:
+[:, :, 1] =
+  -0.523092   0.142552
+  0.142552  -0.0407653
+
+[:, :, 2] =
+  0.142552   -0.0407653
+  -0.0407653   0.0120729
+
+```
 """
-invers_gen(x::Vector{Float64}, theta::Float64) = (1 + theta.*x).^(-1/theta)
-
-"""
-
-  clcopulagen(t::Int, m::Int)
-
-Returns: Matrix{Float} of size t*m - t realisations of m dimentional random var.
-generated from Clayton copula with Weibull marginals
-"""
-function clcopulagen(t::Int, m::Int)
-  theta = 1.02
-  qamma_dist = Gamma(1,1/theta)
-  x = rand(t)
-  u = rand(t, m)
-  matrix = zeros(Float64, t, m)
-  for i = 1:m
-    unif_ret = invers_gen(-log(u[:,i])./quantile(qamma_dist, x), theta)
-    @inbounds matrix[:,i] = quantile(Weibull(1.+0.01*i,1), unif_ret)
+function naivemoment{T<:AbstractFloat}(X::Matrix{T}, m::Int = 4)
+  n = size(X, 2)
+  moment = zeros(T, fill(n, m)...)
+  for i = 1:(n^m)
+    ind = ind2sub((fill(n, m)...), i)
+    @inbounds moment[ind...] = momel(X, ind)
   end
-  matrix
+  moment
 end
 
 # --- uses the naive method to calculate cumulants 2 - 6
 
 """
 
-  momentel(v::Vector{Vector})
+  cumel(X::Matrix{Float}, ind::Tuple)
 
-Returns number, the single element of moment's tensor.
-"""
-momentel{T <: AbstractFloat}(v::Vector{Vector{T}}) =
-  mean(mapreduce(i -> v[i], .*, 1:length(v)))
-
-"""
-
-  cum_el(v::Vector{Vector})
-
-Returns number - sum of moment element and mixed element.
-"""
-cum_el{T<:AbstractFloat}(v::Vector{Vector{T}}) = momentel(v) + mixed_el(v...)
-
-"""
-
-  mixed_el(v::Vector{T}...) (input of 4, 5, or 6 vectors)
-
-Returns number, mixed element for cumulants 4-6,
- result of contraction of vectors, (permutative sum and
-  multiplication of means of elementwise products)
-"""
-function mixed_el{T<:AbstractFloat}(A::Vector{T}, B::Vector{T}, C::Vector{T}, D::Vector{T})
-  -mean(A.*B)*mean(C.*D) - mean(A.*C)*mean(B.*D) - mean(A.*D)*mean(B.*C)
-end
-function mixed_el{T<:AbstractFloat}(A::Vector{T}, B::Vector{T}, C::Vector{T},
-  D::Vector{T}, E::Vector{T})
-  a = -mean(A.*B.*C)*mean(D.*E) - mean(A.*B.*D)*mean(C.*E) - mean(A.*B.*E)*mean(D.*C)
-  a -= mean(D.*B.*C)*mean(A.*E) + mean(E.*B.*C)*mean(D.*A) + mean(A.*D.*C)*mean(B.*E)
-  a -= mean(A.*E.*C)*mean(B.*D) + mean(D.*E.*C)*mean(A.*B) + mean(D.*B.*E)*mean(A.*C)
-  a -= mean(A.*D.*E)*mean(C.*B)
-  return a
-end
-function mixed_el{T<:AbstractFloat}(A::Vector{T}, B::Vector{T}, C::Vector{T},
-  D::Vector{T}, E::Vector{T}, F::Vector{T})
-  block1 = -mean(A.*B.*C)*mean(D.*E.*F) - mean(A.*B.*D)*mean(C.*E.*F) - mean(A.*B.*E)*mean(C.*D.*F)
-  block1 -= mean(A.*B.*F)*mean(C.*D.*E) + mean(A.*C.*D)*mean(B.*E.*F) + mean(A.*C.*E)*mean(B.*D.*F)
-  block1 -= mean(A.*C.*F)*mean(B.*D.*E) + mean(A.*D.*E)*mean(B.*C.*F) + mean(A.*D.*F)*mean(B.*C.*E)
-  block1 -= mean(A.*E.*F)*mean(B.*C.*D)
-  block2 = -mean(A.*B.*C.*D)*mean(E.*F) - mean(A.*B.*C.*E)*mean(D.*F) - mean(A.*B.*C.*F)*mean(D.*E)
-  block2 -= mean(A.*B.*D.*E)*mean(C.*F) + mean(A.*B.*D.*F)*mean(C.*E) + mean(A.*B.*E.*F)*mean(C.*D)
-  block2 -= mean(A.*B)*mean(C.*D.*E.*F) + mean(A.*C.*D.*E)*mean(B.*F) + mean(A.*C.*D.*F)*mean(B.*E)
-  block2 -= mean(A.*C.*E.*F)*mean(B.*D) + mean(A.*C)*mean(B.*D.*E.*F) + mean(A.*D.*E.*F)*mean(B.*C)
-  block2 -= mean(A.*D)*mean(B.*C.*E.*F) + mean(A.*E)*mean(B.*C.*D.*F) + mean(A.*F)*mean(B.*C.*D.*E)
-  block3 = -mean(A.*B)*mean(C.*D)*mean(E.*F) - mean(A.*B)*mean(C.*E)*mean(D.*F)
-  block3 -= mean(A.*B)*mean(C.*F)*mean(D.*E) + mean(A.*C)*mean(B.*D)*mean(E.*F)
-  block3 -= mean(A.*C)*mean(B.*E)*mean(D.*F) + mean(A.*C)*mean(B.*F)*mean(D.*E)
-  block3 -= mean(A.*D)*mean(B.*C)*mean(E.*F) + mean(A.*E)*mean(B.*C)*mean(D.*F)
-  block3 -= mean(A.*F)*mean(B.*C)*mean(D.*E) + mean(A.*D)*mean(B.*E)*mean(C.*F)
-  block3 -= mean(A.*D)*mean(B.*F)*mean(C.*E) + mean(A.*E)*mean(B.*D)*mean(C.*F)
-  block3 -= mean(A.*F)*mean(B.*D)*mean(C.*E) + mean(A.*E)*mean(B.*F)*mean(C.*D)
-  block3 -= mean(A.*F)*mean(B.*E)*mean(C.*D)
-  return block2+block1-2*block3
-end
-
-"""
-
-  naivecumulant(data::Matrix, order)
-
-Returns cumulant, array of dims = order
+Returns Float an element of cumulant's tensor at ind multiindex
 
 ```jldoctest
-julia> gaus_dat =  [[-0.88626   0.279571];[-0.704774  0.131896]];
+julia> M =  [[-0.88626   0.279571];[-0.704774  0.131896]];
 
-julia> naivecumulant(gaus_dat, 3)
+julia> cumel(M, (1,1,1,1))
+-0.80112701050308
+```
+"""
+cumel{T<:AbstractFloat}(X::Matrix{T}, ind::Tuple) = momel(X, ind) + mixel(X, ind)
+
+"""
+
+  mixel(X::Matrix{T}, ind::Tuple)
+
+Returns Float, mixed element for cumulants 4-6 at ind multi-index
+
+```jldoctest
+julia> M =  [[-0.88626   0.279571];[-0.704774  0.131896]];
+
+julia> mixel(M, (1,1,1,1))
+-1.232956812564408
+
+mixel(M, (1,1,1,1,1,1))
+1.015431116914347
+```
+"""
+
+function mixel{T<:AbstractFloat}(X::Matrix{T}, ind::Tuple)
+  A = X[:,ind[1]]
+  B = X[:,ind[2]]
+  C = X[:,ind[3]]
+  D = X[:,ind[4]]
+  if length(ind) == 4
+    return -mean(A.*B)*mean(C.*D) - mean(A.*C)*mean(B.*D) - mean(A.*D)*mean(B.*C)
+  elseif length(ind) == 5
+    E = X[:,ind[5]]
+    a = -mean(A.*B.*C)*mean(D.*E) - mean(A.*B.*D)*mean(C.*E) - mean(A.*B.*E)*mean(D.*C)
+    a -= mean(D.*B.*C)*mean(A.*E) + mean(E.*B.*C)*mean(D.*A) + mean(A.*D.*C)*mean(B.*E)
+    a -= mean(A.*E.*C)*mean(B.*D) + mean(D.*E.*C)*mean(A.*B) + mean(D.*B.*E)*mean(A.*C)
+    a -= mean(A.*D.*E)*mean(C.*B)
+    return a
+  elseif length(ind) == 6
+    E = X[:,ind[5]]
+    F = X[:,ind[6]]
+    a1 = -mean(A.*B.*C)*mean(D.*E.*F) - mean(A.*B.*D)*mean(C.*E.*F) - mean(A.*B.*E)*mean(C.*D.*F)
+    a1 -= mean(A.*B.*F)*mean(C.*D.*E) + mean(A.*C.*D)*mean(B.*E.*F) + mean(A.*C.*E)*mean(B.*D.*F)
+    a1 -= mean(A.*C.*F)*mean(B.*D.*E) + mean(A.*D.*E)*mean(B.*C.*F) + mean(A.*D.*F)*mean(B.*C.*E)
+    a1 -= mean(A.*E.*F)*mean(B.*C.*D)
+    a2 = -mean(A.*B.*C.*D)*mean(E.*F) - mean(A.*B.*C.*E)*mean(D.*F) - mean(A.*B.*C.*F)*mean(D.*E)
+    a2 -= mean(A.*B.*D.*E)*mean(C.*F) + mean(A.*B.*D.*F)*mean(C.*E) + mean(A.*B.*E.*F)*mean(C.*D)
+    a2 -= mean(A.*B)*mean(C.*D.*E.*F) + mean(A.*C.*D.*E)*mean(B.*F) + mean(A.*C.*D.*F)*mean(B.*E)
+    a2 -= mean(A.*C.*E.*F)*mean(B.*D) + mean(A.*C)*mean(B.*D.*E.*F) + mean(A.*D.*E.*F)*mean(B.*C)
+    a2 -= mean(A.*D)*mean(B.*C.*E.*F) + mean(A.*E)*mean(B.*C.*D.*F) + mean(A.*F)*mean(B.*C.*D.*E)
+    a3 = -mean(A.*B)*mean(C.*D)*mean(E.*F) - mean(A.*B)*mean(C.*E)*mean(D.*F)
+    a3 -= mean(A.*B)*mean(C.*F)*mean(D.*E) + mean(A.*C)*mean(B.*D)*mean(E.*F)
+    a3 -= mean(A.*C)*mean(B.*E)*mean(D.*F) + mean(A.*C)*mean(B.*F)*mean(D.*E)
+    a3 -= mean(A.*D)*mean(B.*C)*mean(E.*F) + mean(A.*E)*mean(B.*C)*mean(D.*F)
+    a3 -= mean(A.*F)*mean(B.*C)*mean(D.*E) + mean(A.*D)*mean(B.*E)*mean(C.*F)
+    a3 -= mean(A.*D)*mean(B.*F)*mean(C.*E) + mean(A.*E)*mean(B.*D)*mean(C.*F)
+    a3 -= mean(A.*F)*mean(B.*D)*mean(C.*E) + mean(A.*E)*mean(B.*F)*mean(C.*D)
+    a3 -= mean(A.*F)*mean(B.*E)*mean(C.*D)
+    return a1+a2-2*a3
+  end
+end
+"""
+
+  naivecumulant(data::Matrix, m)
+
+Returns Array{Float, m} the m'th cumulants tensor
+
+```jldoctest
+julia> M =  [[-0.88626   0.279571];[-0.704774  0.131896]];
+
+julia> naivecumulant(M, 3)
 2×2×2 Array{Float64,3}:
 [:, :, 1] =
  0.0  0.0
@@ -111,19 +140,19 @@ julia> naivecumulant(gaus_dat, 3)
 
 ```
 """
-function naivecumulant{T<:AbstractFloat}(data::Matrix{T}, order::Int = 4)
-  data = data .- mean(data, 1)
-  dats = size(data, 2)
-  cumulant = zeros(T, fill(dats, order)...)
-  if order in [2,3]
-    for i = 1:(dats^order)
-      ind = ind2sub((fill(dats, order)...), i)
-      @inbounds cumulant[ind...] = momentel(map(k -> data[:,ind[k]],1:order))
+function naivecumulant{T<:AbstractFloat}(X::Matrix{T}, m::Int = 4)
+  X = X .- mean(X, 1)
+  n = size(X, 2)
+  cumulant = zeros(T, fill(n, m)...)
+  if m in [2,3]
+    for i = 1:(n^m)
+      ind = ind2sub((fill(n, m)...), i)
+      @inbounds cumulant[ind...] = momel(X, ind)
     end
-  elseif order in [4,5,6]
-    for i = 1:(dats^order)
-      ind = ind2sub((fill(dats, order)...), i)
-      @inbounds cumulant[ind...] = cum_el(map(k -> data[:,ind[k]],1:order))
+  elseif m in [4,5,6]
+    for i = 1:(n^m)
+      ind = ind2sub((fill(n, m)...), i)
+      @inbounds cumulant[ind...] = cumel(X, ind)
     end
   end
   return cumulant

@@ -4,51 +4,51 @@ using Cumulants
 using Distributions
 using NullableArrays
 using Iterators
-import Cumulants: indpart, momentseg, splitdata, mom_el, accesscum, outprodblocks,
- IndexPart, outerpodcum, moments, clcopulagen, moment_n
+import Cumulants: indpart, momentblock, blockel, accesscum, outprodblocks,
+ IndexPart, outerpodcum, naivemoment, pyramidmoment, usebl
 
 import SymmetricTensors: indices
 
-data = clcopulagen(10, 4)
+srand(42)
+x = randn(10,4);
+d = MvLogNormal(x'*x)
+data = rand(d, 10)'
 
 facts("Helper functions") do
-  context("splitdata") do
-    M = [1. 2. 3. 4.; 5. 6. 7. 8.]
-    @fact splitdata(M, 2) --> [[1. 2. ; 5. 6.],[3. 4. ; 7. 8.]]
-    @fact splitdata(M, 3)[1] --> [1. 2. 3.; 5. 6. 7.]
-  end
   context("moment helpers")do
-    @fact mom_el([[1. 2. ; 5. 6.],[3. 4. ; 7. 8.]], (1,1)) --> 19.
-    @fact mom_el([[1. 2. ; 5. 6.],[3. 4. ; 7. 8.]], (1,2)) --> 22.
-    @fact momentseg([[1. 2.; 5. 6.],[3. 4.; 7. 8.]])-->[[19.0  22.0];[24.0  28.0]]
-  end
-end
-facts("Moments on vec of matrices") do
-  context("2") do
-    mom = moments([[1. 2. ; 5. 6.],[3. 4. ; 7. 8.]], 2).frame
-    @fact mom[1,2].value --> [19.0 22.0; 24.0 28.0]
-  end
-  d = splitdata(data, 2)
-  context("3") do
-    @fact convert(Array, moments(d, 3)) --> roughly(moment_n(data, 3))
-  end
-  context("4") do
-    @fact convert(Array, moments(d, 4)) --> roughly(moment_n(data, 4))
+    M = [1. 2.  5. 6. ; 3. 4.  7. 8.]
+    @fact blockel(M, (1,1), (1,1), 2) --> 5.
+    @fact blockel(M, (1,1), (2,2), 2) --> 37.
+    @fact usebl((1,1,3), 5, 2, 3) --> (2,2,1)
+    @fact momentblock(M, (1,1), (2,2), 2)-->[[5.0  7.0];[7.0  10.0]]
   end
 end
 
-facts("Moments on data") do
+facts("Moment") do
+  M =  [[-0.88626   0.279571];[-0.704774  0.131896]]
+  context("naivemoment") do
+    @fact naivemoment(M, 3)[:,:,1] --> roughly([-0.523092   0.142552;   0.142552  -0.0407653], 1e-5)
+    @fact naivemoment(M, 3)[:,:,2] --> roughly([0.142552   -0.0407653; -0.0407653   0.0120729], 1e-5)
+  end
+  context("pyramidmoment") do
+    @fact pyramidmoment(M, 3)[:,:,1] --> roughly([-0.523092   0.142552;   0.142552  -0.0407653], 1e-5)
+    @fact pyramidmoment(M, 3)[:,:,2] --> roughly([0.142552   -0.0407653; -0.0407653   0.0120729], 1e-5)
+  end
+  context("2") do
+    @fact convert(Array, moment(data, 2)) --> roughly(naivemoment(data, 2))
+  end
   context("3") do
-    @fact convert(Array, moment(data, 3)) --> roughly(moment_n(data, 3))
+    @fact convert(Array, moment(data, 3)) --> roughly(naivemoment(data, 3))
   end
   context("4") do
-    @fact convert(Array, moment(data, 4)) --> roughly(moment_n(data, 4))
+    @fact convert(Array, moment(data, 4)) --> roughly(naivemoment(data, 4))
+    @fact convert(Array, moment(data, 4, 3)) --> roughly(naivemoment(data, 4))
   end
 end
 
 facts("Exceptions") do
   context("Size of blocks") do
-    @fact_throws DimensionMismatch, momentbs(data, 4,  25)
+    @fact_throws DimensionMismatch, moment(data, 4,  25)
     @fact_throws DimensionMismatch, cumulants(data, 3,  25)
   end
 end

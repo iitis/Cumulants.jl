@@ -1,57 +1,45 @@
 """
-  raw_moment(x::Matrix{T}, p::Int = 4)
+  rawmoment(X::Matrix{T}, m::Int = 4)
 
 Simmilar to raw_moments_upto_p in R, does not expoloit tensor's symmetry
 pyramid structures and blocks
 
-Returns p-dims array, a moment tensor of order p of multivariate data x
+Returns Array{Float, m}, the m'th moment's tensor
 """
 
-function raw_moment{T <: AbstractFloat}(x::Matrix{T}, p::Int = 4)
-  n,m = size(x)
-  if p == 1
-    return mean(x, 1)[1,:]
+function rawmoment{T <: AbstractFloat}(X::Matrix{T}, m::Int = 4)
+  t,n = size(X)
+  if m == 1
+    return mean(X, 1)[1,:]
   else
-    y = zeros(T, fill(m, p)...)
-    for i in 1:n
-      @inbounds xi = x[i, :]
+    y = zeros(T, fill(n, m)...)
+    for i in 1:t
+      @inbounds xi = X[i, :]
       z = xi
-      for s in 2:p
-        @inbounds z = reshape(kron(xi', vec(z)), fill(m, s)...)
+      for j in 2:m
+        @inbounds z = reshape(kron(xi', vec(z)), fill(n, j)...)
       end
       y = y + z
     end
   end
-  y/n
+  y/t
 end
 
 """
-  raw_moments_upto_k(data::Matrix, k::Int = 4)
+  raw_moments_upto_k(X::Matrix, k::Int = 4)
 
-  Returns vector of arrays [Array{1}, Array{2}, ..., Array{N}] being moment
-  tensors of order 1, ..., k
+Returns [Array{Float, 1}, ..., Array{Float, k}] noncentral moment tensors of
+order 1, ..., k
 """
-function raw_moments_upto_k{T <: AbstractFloat}(data::Matrix{T}, k::Int = 4)
-  [raw_moment(data, i) for i in 1:k]
-end
+raw_moments_upto_k{T <: AbstractFloat}(X::Matrix{T}, k::Int = 4) = [rawmoment(X, i) for i in 1:k]
 
 """
-  function cumulants_from_moments(raw::[Array{1}, Array{2}, ..., Array{N}])
+  cumulants_from_moments(raw::Vector{Array{Float, i}, m = 1:k})
 
-Returns vector of arrays [Array{1}, Array{2}, ..., Array{N}] being cumulant
-tensors of order 1, ..., k
+Returns [Array{Float, 1}, ..., Array{Float, k}] cumulant tensors of order 1, ..., k
 
- Uses relation between cumulants and multivariate moments from
-
- @book{mccullagh1987tensor,
-   title={Tensor methods in statistics},
-   author={McCullagh, Peter},
-   volume={161},
-   year={1987},
-   publisher={Chapman and Hall London}
- }
-
-e.g. c_{ijkl} = m_{ijkl} - m_{ijk} m_{l} [4] - m_{ij} m_{kl} [3] + 2 m_{ij} m_{k} m_{l}
+Uses relation between cumulants and multivariate moments from e.g.
+c_{ijkl} = m_{ijkl} - m_{ijk} m_{l} [4] - m_{ij} m_{kl} [3] + 2 m_{ij} m_{k} m_{l}
 -6 m_{i} m_{j} m_{k} m_{l}
 """
 

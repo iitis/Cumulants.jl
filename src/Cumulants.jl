@@ -4,6 +4,7 @@ module Cumulants
   using Iterators
   using Combinatorics
   using Distributions
+  using TensorOperations
   import SymmetricTensors: indices, ind2range, sizetest
   import Distributions: moment
 

@@ -1,112 +1,80 @@
 ## following code is used to caclulate moments in SymmetricTensor form ##
+
 """
 
-    splitdata(M::Matrix, s::Int)
+    blockel(X::Matrix{T}, ind::Tuple, bind::Tuple, b::Int)
 
-Returns vector of matrices, each of bls columns. Mumber of columns
-is smaller if ! bls / size(M, 2)
+Returns Float, the element of the block (indexed by bind) of the moment's tensor
+ of X, at index ind inside a block, where b is a standard blocks' size
+
 
 ```jldoctest
-julia> M = [1. 2. 3. 4.; 5. 6. 7. 8.];
+julia> M = [1. 2.  5. 6. ; 3. 4.  7. 8.];
 
-julia> splitdata(M, 2)
-2-element Array{Matrix,1}:
- [1.0 2.0; 5.0 6.0]
- [3.0 4.0; 7.0 8.0]
+julia> mom_el(M, (1,1), (1,1), 2)
+5.0
 
-julia> splitdata(M, 3)
-2-element Array{Matrix,1}:
- [1.0 2.0 3.0; 5.0 6.0 7.0]
- [4.0; 8.0]
-```
-"""
-function splitdata{T<:AbstractFloat}(data::Matrix{T}, bls::Int)
-  M = size(data,2)
-  sizetest(M, bls)
-  ret = Matrix{T}[]
-  for i in 1:ceil(Int, M/bls)
-    push!(ret, data[:,ind2range(i, bls, M)])
-  end
-  ret
-end
-
-"""
-
-    mom_el(Y::Vector{Matrix}, multind::Tuple{Int...})
-
-Returns AbstractFloat, the mean of elementwise multiple of particular columns
-(one column from each matrix in Y). For k'th matrix (Y[k]) the number of the
-column is determined by k'th element of multind.
-
-```jldoctest
-julia> Y = [[1. 2. ; 5. 6.],[3. 4. ; 7. 8.]];
-
-julia> mom_el(Y, (1,1))
-19.0
-
-julia> mom_el(Y, (1,2))
-22.0
+julia> mom_el(M, (1,1), (2,2), 2)
+37.0
  ```
 """
-mom_el{T <: AbstractFloat}(Y::Vector{Matrix{T}}, mulind::Tuple) =
-      mean(mapreduce(i -> Y[i][:,mulind[i]], .*, 1:length(mulind)))
+
+blockel{T <: AbstractFloat}(X::Matrix{T}, ind::Tuple, bind::Tuple, b::Int) =
+    mean(mapreduce(i::Int -> X[:,(bind[i]-1)*b+ind[i]], .*, 1:length(ind)))
 
 """
 
-  momentseg(Y::Vector{Matrix})
+  momentblock(X::Matrix{T}, bind::Tuple, dims::Tuple, b::Int)
 
-Returns a block - Array{AbstractFloat, length(Y)} that is a reduction of matrices in Y
+Returns a block of a moment's tensor of X. A block is indexed by bind and if size dims,
+b is a standatd block size.
 
 ```jldoctest
-julia> momentseg([[1. 2. ; 5. 6.],[3. 4. ; 7. 8.]])
-2×2 Matrix:
- 19.0  22.0
- 24.0  28.0
+julia> M = [1. 2.  5. 6. ; 3. 4.  7. 8.];
+
+julia> momentblock(M, (1,1), (2,2), 2)
+2×2 Array{Float64,2}:
+ 5.0   7.0
+ 7.0  10.0
 ```
 """
-function momentseg{T <: AbstractFloat}(Y::Vector{Matrix{T}})
-  dims = map(j -> size(Y[j], 2), (1:length(Y)...))
+
+function momentblock{T <: AbstractFloat}(X::Matrix{T}, bind::Tuple, dims::Tuple, b::Int)
   ret = (nprocs()==1)? zeros(T, dims): SharedArray(T, dims)
-  @sync @parallel for i = 1:prod(dims)
-    mulind = ind2sub(dims, i)
-    @inbounds ret[mulind...] = mom_el(Y, mulind)
+  @sync @parallel for i = 1:(prod(dims))
+    ind = ind2sub(dims, i)
+    @inbounds ret[ind...] = blockel(X, ind, bind, b)
   end
   Array(ret)
 end
 
 """
-    moments(X::Vector{Matrix, n::Int)
+    moment(X::Matrix}, m::Int, b::Int)
 
-Returns: outdims - dimentional moment tensor in SymmetricTensor form.
-```jldoctest
-julia> mom = momentbs([[1. 2. ; 5. 6.],[3. 4. ; 7. 8.]], 2);
-
-julia> mom.frame
-2×2 NullableArray{Matrix, 2}:
- [13.0 16.0; 16.0 20.0]  [19.0 22.0; 24.0 28.0]
- #NULL                   [29.0 34.0; 34.0 40.0]
-
-```
+Returns: SymmetricTensor{Float, m}, a tensor of the m'th moment of X, where b
+is a block size.
 """
-function moments{T <: AbstractFloat}(X::Vector{Matrix{T}}, outdims::Int)
-    ret = NullableArray(Array{T, outdims}, fill(length(X), outdims)...)
-    for mulind in indices(outdims, length(X))
-      Y = map(k -> X[mulind[k]], 1:outdims)
-      @inbounds ret[mulind...] = momentseg(Y)
-    end
-    SymmetricTensor(ret; testdatstruct = false)
+function moment{T <: AbstractFloat}(X::Matrix{T}, m::Int, b::Int = 2)
+  n = size(X, 2)
+  sizetest(n, b)
+  nbar = ceil(Int, n/b)
+  ret = NullableArray(Array{T, m}, fill(nbar, m)...)
+  for bind in indices(m, nbar)
+    dims = (mod(n,b) == 0 || !(nbar in bind))? (fill(b,m)...): usebl(bind, n, b, nbar)
+    @inbounds ret[bind...] = momentblock(X, bind, dims, b)
+  end
+  SymmetricTensor(ret; testdatstruct = false)
 end
 
 """
-    moment(X::Matrix}, n::Int, bls::Int - block size)
+    usebl(bind::Tuple, n::Int, b::Int, nbar::Int)
 
-Returns: outdims - dimentional moment tensor in SymmetricTensor form.
+Returns: Tuple{Int}, sizes of the last block
 """
-function moment{T <: AbstractFloat}(X::Matrix{T}, outdims::Int, bls::Int = 2)
-  X = splitdata(X, bls)
-  moments(X, outdims)
+function usebl(bind::Tuple, n::Int, b::Int, nbar::Int)
+  bl = n - b*(nbar-1)
+  map(i -> (i == nbar)? (bl) : (b), bind)
 end
-
 # ---- following code is used to caclulate cumulants in SymmetricTensor form----
 """
 
@@ -227,10 +195,10 @@ julia> outprodblocks(IndexPart(Array{Int64,1}[[1,2],[3,4]],[2,2],4,2), blocks)
 ```
 """
 function outprodblocks{T <: AbstractFloat}(inp::IndexPart, blocks::Vector{Array{T}})
-  s = size(blocks[1], 1)
-  block = zeros(T, fill(s, inp.nind)...)
-  for i = 1:(s^inp.nind)
-    muli = ind2sub((fill(s, inp.nind)...), i)
+  b = size(blocks[1], 1)
+  block = zeros(T, fill(b, inp.nind)...)
+  for i = 1:(b^inp.nind)
+    muli = ind2sub((fill(b, inp.nind)...), i)
     @inbounds block[muli...] =
     mapreduce(i -> blocks[i][muli[inp.part[i]]...], *, 1:inp.npart)
   end
@@ -283,30 +251,32 @@ end
 
 """
 
-    cumulantn(X::Vector{Matrix}, n::Int, cum::SymmetricTensor...)
+    cumulant(X::Vector{Matrix}, cum::SymmetricTensor...)
 
-Returns n th cumulant given multivariate data stored in X and lower order cumulants
-cum
+Returns: SymmetricTensor{Float, m}, a tensor of the m'th cumulant of X, given Vector
+of cumulants of order 2, ..., m-2
 """
 
-function cumulantn{T <: AbstractFloat}(X::Vector{Matrix{T}}, n::Int, cum::SymmetricTensor{T}...)
-  ret =  moments(X, n)
-  for sigma in 2:floor(Int, n/2)
-    ret -= outerpodcum(n, sigma, cum...)
+function cumulant{T <: AbstractFloat}(X::Matrix{T}, cum::SymmetricTensor{T}...)
+  m = length(cum) + 3
+  ret =  moment(X, m, cum[1].bls)
+  for sigma in 2:floor(Int, m/2)
+    ret -= outerpodcum(m, sigma, cum...)
   end
   ret
 end
 
 """
 
-    cumulants(X::Matrix, n::Int, bls::Int)
+    cumulants(X::Matrix, m::Int, b::Int)
 
-Returns array of cumullants of order 2 - n, in the SymmetricTensor form.
+Returns [SymmetricTensor{Float, 2}, ..., SymmetricTensor{Float, m}], vector of
+cumulants tensors
 
 ```
-julia> gaus_dat =  [[-0.88626   0.279571];[-0.704774  0.131896]];
+julia> M =  [[-0.88626   0.279571];[-0.704774  0.131896]];
 
-julia> convert(Array, cumulants(gaus_dat, 3)[2])
+julia> convert(Array, cumulants(M, 3)[2])
 2×2×2 Array{Float64,3}:
 [:, :, 1] =
  0.0  0.0
@@ -317,26 +287,25 @@ julia> convert(Array, cumulants(gaus_dat, 3)[2])
  0.0  0.0
 ```
 """
-function cumulants{T <: AbstractFloat}(X::Matrix{T}, n::Int, bls::Int = 2)
+function cumulants{T <: AbstractFloat}(X::Matrix{T}, m::Int, b::Int = 2)
   X = X .- mean(X, 1)
-  X = splitdata(X, bls)
-  ret = Array(SymmetricTensor{T}, n-1)
-  for i = 2:n
-    @inbounds ret[i-1] = (i < 4)? moments(X, i): cumulantn(X, i, ret[1:(i-3)]...)
+  cvec = Array(SymmetricTensor{T}, m-1)
+  for i = 2:m
+    @inbounds cvec[i-1] = (i < 4)? moment(X, i, b): cumulant(X, cvec[1:(i-3)]...)
   end
-  ret
+  cvec
 end
 
 """
 
-    getcumulant(cum::Vector{SymmetricTensor{T}}, i::Int)
+    getcumulant(cum::Vector{SymmetricTensor{T}}, m::Int)
 
-Returns cumulant of given order in SymmetricTensor type
+Returns SymmetricTensor{Float, m}, the m'th cumulant tensor
 """
-function getcumulant{T <: AbstractFloat}(cum::Vector{SymmetricTensor{T}}, order::Int)
-  if order == 1
+function getcumulant{T <: AbstractFloat}(cum::Vector{SymmetricTensor{T}}, m::Int)
+  if m == 1
     throw(BoundsError("mean vector not stored"))
   else
-    return cum[order-1]
+    return cum[m-1]
   end
 end
