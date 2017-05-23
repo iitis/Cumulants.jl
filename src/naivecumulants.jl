@@ -19,7 +19,7 @@ momel{T <: AbstractFloat}(X::Matrix{T}, ind::Tuple) =
 
 """
 
-  naivemoment(data::Matrix, m)
+  naivemoment(data::Matrix{Float}, m::Int)
 
 Returns Array{Float, m} the m'th moment tensor
 
@@ -121,9 +121,9 @@ function mixel{T<:AbstractFloat}(X::Matrix{T}, ind::Tuple)
 end
 """
 
-  naivecumulant(data::Matrix, m)
+  naivecumulant(data::Matrix, m::Int)
 
-Returns Array{Float, m} the m'th cumulants tensor
+Returns Array{Float, m} the m'th cumulant tensor
 
 ```jldoctest
 julia> M =  [[-0.88626   0.279571];[-0.704774  0.131896]];

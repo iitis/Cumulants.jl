@@ -5,7 +5,8 @@ using Distributions
 using NullableArrays
 using Iterators
 import Cumulants: indpart, momentblock, blockel, accesscum, outprodblocks,
- IndexPart, outerpodcum, naivemoment, pyramidmoment, usebl
+ IndexPart, outerpodcum, naivemoment, pyramidmoment, pyramidcumulants, mom2cums,
+  usebl
 
 import SymmetricTensors: indices
 

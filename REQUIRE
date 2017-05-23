@@ -5,4 +5,7 @@ Iterators
 Combinatorics
 Distributions
 FactCheck
-
+NPZ
+PyPlot
+PyCall
+ArgParse

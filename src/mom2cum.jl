@@ -18,6 +18,7 @@ function rawmoment{T <: AbstractFloat}(X::Matrix{T}, m::Int = 4)
       z = xi
       for j in 2:m
         @inbounds z = reshape(kron(xi', vec(z)), fill(n, j)...)
+        #@inbounds z = reshape(vec(z)*xi', fill(n, j)...)
       end
       y = y + z
     end

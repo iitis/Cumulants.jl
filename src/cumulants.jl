@@ -2,10 +2,10 @@
 
 """
 
-    blockel(X::Matrix{T}, ind::Tuple, bind::Tuple, b::Int)
+    blockel(X::Matrix{T}, i::Tuple, j::Tuple, b::Int)
 
-Returns Float, the element of the block (indexed by bind) of the moment's tensor
- of X, at index ind inside a block, where b is a standard blocks' size
+Returns Float, the element of the block (indexed by j) of the moment's tensor
+ of X, at index cd i inside a block, where b is a standard blocks' size
 
 
 ```jldoctest
@@ -19,14 +19,15 @@ julia> mom_el(M, (1,1), (2,2), 2)
  ```
 """
 
-blockel{T <: AbstractFloat}(X::Matrix{T}, ind::Tuple, bind::Tuple, b::Int) =
-    mean(mapreduce(i::Int -> X[:,(bind[i]-1)*b+ind[i]], .*, 1:length(ind)))
+blockel{T <: AbstractFloat}(X::Matrix{T}, i::Tuple, j::Tuple, b::Int) =
+    mean(mapreduce(k::Int -> X[:,(j[k]-1)*b+i[k]], .*, 1:length(i)))
+
 
 """
 
-  momentblock(X::Matrix{T}, bind::Tuple, dims::Tuple, b::Int)
+  momentblock(X::Matrix{T}, j::Tuple, dims::Tuple, b::Int)
 
-Returns a block of a moment's tensor of X. A block is indexed by bind and if size dims,
+Returns a block of a moment's tensor of X. A block is indexed by j and if size dims,
 b is a standatd block size.
 
 ```jldoctest
@@ -39,11 +40,11 @@ julia> momentblock(M, (1,1), (2,2), 2)
 ```
 """
 
-function momentblock{T <: AbstractFloat}(X::Matrix{T}, bind::Tuple, dims::Tuple, b::Int)
+function momentblock{T <: AbstractFloat}(X::Matrix{T}, j::Tuple, dims::Tuple, b::Int)
   ret = (nprocs()==1)? zeros(T, dims): SharedArray(T, dims)
-  @sync @parallel for i = 1:(prod(dims))
-    ind = ind2sub(dims, i)
-    @inbounds ret[ind...] = blockel(X, ind, bind, b)
+  @sync @parallel for ind = 1:(prod(dims))
+    i = ind2sub(dims, ind)
+    @inbounds ret[i...] = blockel(X, i, j, b)
   end
   Array(ret)
 end
@@ -59,9 +60,9 @@ function moment{T <: AbstractFloat}(X::Matrix{T}, m::Int, b::Int = 2)
   sizetest(n, b)
   nbar = ceil(Int, n/b)
   ret = NullableArray(Array{T, m}, fill(nbar, m)...)
-  for bind in indices(m, nbar)
-    dims = (mod(n,b) == 0 || !(nbar in bind))? (fill(b,m)...): usebl(bind, n, b, nbar)
-    @inbounds ret[bind...] = momentblock(X, bind, dims, b)
+  for j in indices(m, nbar)
+    dims = (mod(n,b) == 0 || !(nbar in j))? (fill(b,m)...): usebl(j, n, b, nbar)
+    @inbounds ret[j...] = momentblock(X, j, dims, b)
   end
   SymmetricTensor(ret; testdatstruct = false)
 end
@@ -287,7 +288,7 @@ julia> convert(Array, cumulants(M, 3)[2])
  0.0  0.0
 ```
 """
-function cumulants{T <: AbstractFloat}(X::Matrix{T}, m::Int, b::Int = 2)
+function cumulants{T <: AbstractFloat}(X::Matrix{T}, m::Int = 4, b::Int = 2)
   X = X .- mean(X, 1)
   cvec = Array(SymmetricTensor{T}, m-1)
   for i = 2:m

@@ -31,7 +31,7 @@ function pltspeedup(comptimes::Array{Float64}, m::Int, n::Vector{Int}, T::Vector
   ax[:legend](fontsize = 12, loc = 4, ncol = 1)
   name = replace("$label$m$T$n", "[", "_")
   name = replace(name, "]", "")
-  fig[:savefig]("res1/"*name*".eps")
+  fig[:savefig]("res2/"*name*".eps")
 end
 
 """
@@ -49,6 +49,13 @@ function comptime(data::Matrix{Float64}, ccalc::Function, m::Int)
   Float64(time_ns()-t)/1.0e9
 end
 
+function comptime(data::Matrix{Float64}, ccalc::Function, m::Int, b::Int)
+  ccalc(data[1:4, 1:4], m, b)
+  t = time_ns()
+  ccalc(data, m, b)
+  Float64(time_ns()-t)/1.0e9
+end
+
 """
   compspeedups(f::Function, M::Int, T::Vector{Int}, n::Vector{Int})
 
@@ -63,7 +70,7 @@ function compspeedups(ccalc::Function, m::Int, T::Vector{Int}, n::Vector{Int}, f
   for i in 1:length(T)
     for j in 1:length(n)
       data = randn(T[i], n[j])
-      compt[j,i] = comptime(data, ccalc, m)/comptime(data, f, m)
+      compt[j,i] = comptime(data, ccalc, m)/comptime(data, f, m, 3)
     end
   end
   compt
@@ -80,7 +87,7 @@ M is cumulant's order, n vector of numbers of variables, T vector of numbers of
 their realisations.
 """
 function plotcomptime(ccalc::Function, m::Int, T::Vector{Int}, n::Vector{Int}, cash::Bool, f::Function = cumulants)
-  filename = replace("res1/"*string(ccalc)*string(m)*string(T)*string(n)*".npz", "[", "_")
+  filename = replace("res2/"*string(ccalc)*string(m)*string(T)*string(n)*".npz", "[", "_")
   filename = replace(filename, "]", "")
   if isfile(filename)*cash
     compt = npzread(filename)
@@ -127,11 +134,11 @@ function main(args)
   n = parsed_args["nvar"]
   T = parsed_args["dats"]
   cash = parsed_args["cash"]
-
+  plotcomptime(rawmoment, m, T, n, cash, moment)
+  plotcomptime(naivemoment, m, T, n, cash, moment)
+  #plotcomptime(pyramidcumulants, m, T, n, cash)
   plotcomptime(mom2cums, m, T, n, cash)
   plotcomptime(naivecumulant, m, T, n, cash)
-  plotcomptime(naivemoment, m, T, n, cash, moment)
-  plotcomptime(rawmoment, m, T, n, cash, moment)
 end
 
 main(ARGS)
