@@ -41,8 +41,8 @@ julia> momentblock(M, (1,1), (2,2), 2)
 """
 
 function momentblock{T <: AbstractFloat}(X::Matrix{T}, j::Tuple, dims::Tuple, b::Int)
-  ret = (nprocs()==1)? zeros(T, dims): SharedArray(T, dims)
-  @sync @parallel for ind = 1:(prod(dims))
+  ret = zeros(T, dims)
+  for ind = 1:(prod(dims))
     i = ind2sub(dims, ind)
     @inbounds ret[i...] = blockel(X, i, j, b)
   end
@@ -55,7 +55,7 @@ end
 Returns: SymmetricTensor{Float, m}, a tensor of the m'th moment of X, where b
 is a block size.
 """
-function moment{T <: AbstractFloat}(X::Matrix{T}, m::Int, b::Int = 2)
+function moment{T <: AbstractFloat}(X::Matrix{T}, m::Int, b::Int=2)
   n = size(X, 2)
   sizetest(n, b)
   nbar = ceil(Int, n/b)
@@ -66,6 +66,7 @@ function moment{T <: AbstractFloat}(X::Matrix{T}, m::Int, b::Int = 2)
   end
   SymmetricTensor(ret; testdatstruct = false)
 end
+
 
 """
     usebl(bind::Tuple, n::Int, b::Int, nbar::Int)
