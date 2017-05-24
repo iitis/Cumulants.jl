@@ -9,7 +9,7 @@ using PyPlot
 using NPZ
 using ArgParse
 import SymmetricTensors: indices
-import Cumulants: naivemoment, rawmoment
+import Cumulants: rawmoment, mom2cums
 """
   pltspeedup(comptimes::Array{Float}, m::Int, n::Vector{Int}, T::Vector{Int}, label::String)
 
