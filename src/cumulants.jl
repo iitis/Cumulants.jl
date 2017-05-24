@@ -1,11 +1,11 @@
-## following code is used to caclulate moments in SymmetricTensor form ##
+# following code is used to caclulate moments in SymmetricTensor form ##
 
 """
 
     blockel(X::Matrix{T}, i::Tuple, j::Tuple, b::Int)
 
 Returns Float, the element of the block (indexed by j) of the moment's tensor
- of X, at index cd i inside a block, where b is a standard blocks' size
+of X, at index cd i inside a block, where b is a standard blocks' size
 
 
 ```jldoctest
@@ -16,12 +16,11 @@ julia> mom_el(M, (1,1), (1,1), 2)
 
 julia> mom_el(M, (1,1), (2,2), 2)
 37.0
- ```
+```
 """
 
 blockel{T <: AbstractFloat}(X::Matrix{T}, i::Tuple, j::Tuple, b::Int) =
     mean(mapreduce(k::Int -> X[:,(j[k]-1)*b+i[k]], .*, 1:length(i)))
-
 
 """
 
@@ -49,13 +48,19 @@ function momentblock{T <: AbstractFloat}(X::Matrix{T}, j::Tuple, dims::Tuple, b:
   Array(ret)
 end
 
-"""
-    moment(X::Matrix}, m::Int, b::Int)
 
-Returns: SymmetricTensor{Float, m}, a tensor of the m'th moment of X, where b
-is a block size.
 """
-function moment{T <: AbstractFloat}(X::Matrix{T}, m::Int, b::Int=2)
+    usebl(bind::Tuple, n::Int, b::Int, nbar::Int)
+
+Returns: Tuple{Int}, sizes of the last block
+"""
+
+function usebl(bind::Tuple, n::Int, b::Int, nbar::Int)
+  bl = n - b*(nbar-1)
+  map(i -> (i == nbar)? (bl) : (b), bind)
+end
+
+function moment1c{T <: AbstractFloat}(X::Matrix{T}, m::Int, b::Int=2)
   n = size(X, 2)
   sizetest(n, b)
   nbar = ceil(Int, n/b)
@@ -67,16 +72,28 @@ function moment{T <: AbstractFloat}(X::Matrix{T}, m::Int, b::Int=2)
   SymmetricTensor(ret; testdatstruct = false)
 end
 
-
-"""
-    usebl(bind::Tuple, n::Int, b::Int, nbar::Int)
-
-Returns: Tuple{Int}, sizes of the last block
-"""
-function usebl(bind::Tuple, n::Int, b::Int, nbar::Int)
-  bl = n - b*(nbar-1)
-  map(i -> (i == nbar)? (bl) : (b), bind)
+function momentnc{T <: AbstractFloat}(x::Matrix{T}, m::Int, b::Int = 2)
+  t = size(x, 1)
+  f(z) = moment(z, m, b)
+  k = nprocs()
+  r = ceil(Int, t/k)
+  y = [x[ind2range(i, r, t), :] for i in 1:k]
+  ret = pmap(f, y)
+  (r*sum(ret[1:(end-1)])+(T-(k-1)*r)ret[end])/t
+  println("||")
 end
+
+
+"""
+    moment(X::Matrix}, m::Int, b::Int)
+
+Returns: SymmetricTensor{Float, m}, a tensor of the m'th moment of X, where b
+is a block size.
+"""
+
+moment{T <: AbstractFloat}(X::Matrix{T}, m::Int, b::Int=2) =
+  (nprocs()==1)? moment1c(X, m, b): momentnc(X, m, b)
+
 # ---- following code is used to caclulate cumulants in SymmetricTensor form----
 """
 
@@ -293,7 +310,7 @@ function cumulants{T <: AbstractFloat}(X::Matrix{T}, m::Int = 4, b::Int = 2)
   X = X .- mean(X, 1)
   cvec = Array(SymmetricTensor{T}, m-1)
   for i = 2:m
-    @inbounds cvec[i-1] = (i < 4)? moment(X, i, b): cumulant(X, cvec[1:(i-3)]...)
+    @inbounds cvec[i-1] = (i < 4)? moment1c(X, i, b): cumulant(X, cvec[1:(i-3)]...)
   end
   cvec
 end

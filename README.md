@@ -154,11 +154,11 @@ julia> convert(Array, getcumulant(c, 2))
  julia> convert(Array, getcumulant(c, 1))
 ERROR: BoundsError: attempt to access "mean vector not stored"
 ```
-For parallel computation just run 
+Parallel computation available, it is efficient for large number of data realisations, large 'size(data, 1)'.  For parallel computation just run 
 ```julia
-julia> addprocs()
 julia> using Cumulants
-julia> rmprocs()
+julia> addprocs()
+julia> @everywhere using Cumulants
 ```
 
 The naive algorithms of moment and cumulant tesors calculations are also available. 
