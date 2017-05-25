@@ -60,6 +60,13 @@ function usebl(bind::Tuple, n::Int, b::Int, nbar::Int)
   map(i -> (i == nbar)? (bl) : (b), bind)
 end
 
+"""
+    momentn1(X::Matrix}, m::Int, b::Int)
+
+Returns: SymmetricTensor{Float, m}, a tensor of the m'th moment of X, where b
+is a block size. Uses 1 core implementation
+"""
+
 function moment1c{T <: AbstractFloat}(X::Matrix{T}, m::Int, b::Int=2)
   n = size(X, 2)
   sizetest(n, b)
@@ -72,15 +79,22 @@ function moment1c{T <: AbstractFloat}(X::Matrix{T}, m::Int, b::Int=2)
   SymmetricTensor(ret; testdatstruct = false)
 end
 
+
+"""
+    momentnc(X::Matrix}, m::Int, b::Int)
+
+Returns: SymmetricTensor{Float, m}, a tensor of the m'th moment of X, where b
+is a block size. Uses multicore parallel implementation via pmap()
+"""
+
 function momentnc{T <: AbstractFloat}(x::Matrix{T}, m::Int, b::Int = 2)
   t = size(x, 1)
-  f(z) = moment(z, m, b)
+  f(z::Matrix{T}) = moment1c(z, m, b)
   k = nprocs()
   r = ceil(Int, t/k)
   y = [x[ind2range(i, r, t), :] for i in 1:k]
   ret = pmap(f, y)
-  (r*sum(ret[1:(end-1)])+(T-(k-1)*r)ret[end])/t
-  println("||")
+  (r*sum(ret[1:(end-1)])+(t-(k-1)*r)*ret[end])/t
 end
 
 
@@ -88,7 +102,7 @@ end
     moment(X::Matrix}, m::Int, b::Int)
 
 Returns: SymmetricTensor{Float, m}, a tensor of the m'th moment of X, where b
-is a block size.
+is a block size. Calls 1 core or multicore moment function.
 """
 
 moment{T <: AbstractFloat}(X::Matrix{T}, m::Int, b::Int=2) =

@@ -141,16 +141,17 @@ end
 
 addprocs(3)
 @everywhere using Cumulants
-println("add")
 context("Cumulants parallel implementation") do
-  c2, c3, c4 = cumulants(data[:, 1:2], 4, 2)
-  @fact convert(Array, c2) --> roughly(cn2)
-  @fact convert(Array, c3) --> roughly(cn3)
-  @fact convert(Array, c4) --> roughly(cn4)
-  #@fact convert(Array, c5) --> roughly(cn5)
-  #@fact convert(Array, c6) --> roughly(cn6)
-  #@fact convert(Array, c7) --> roughly(cn7)
-  #@fact convert(Array, c8) --> roughly(cn8)
+  facts("") do
+  c2, c3, c4, c5, c6, c7, c8 = cumulants(data[:, 1:2], 8, 2)
+    @fact convert(Array, c2) --> roughly(cn2)
+    @fact convert(Array, c3) --> roughly(cn3)
+    @fact convert(Array, c4) --> roughly(cn4)
+    @fact convert(Array, c5) --> roughly(cn5)
+    @fact convert(Array, c6) --> roughly(cn6)
+    @fact convert(Array, c7) --> roughly(cn7)
+    @fact convert(Array, c8) --> roughly(cn8);
+  end
 end
 
-rmprocs(procs()[2:end])
+#rmprocs(procs())
