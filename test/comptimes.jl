@@ -118,8 +118,8 @@ function main(args)
         default = [22, 24]
         help = "n, numbers of marginal variables"
         arg_type = Int
-      "--dats", "-T"
-        help = "T, numbers of data records"
+      "--dats", "-t"
+        help = "t, numbers of data records"
         nargs = '*'
         default = [4000]
         arg_type = Int
@@ -132,13 +132,12 @@ function main(args)
   parsed_args = parse_args(s)
   m = parsed_args["order"]
   n = parsed_args["nvar"]
-  T = parsed_args["dats"]
+  t = parsed_args["dats"]
   cash = parsed_args["cash"]
-  plotcomptime(rawmoment, m, T, n, cash, moment)
-  plotcomptime(naivemoment, m, T, n, cash, moment)
-  #plotcomptime(pyramidcumulants, m, T, n, cash)
-  plotcomptime(mom2cums, m, T, n, cash)
-  plotcomptime(naivecumulant, m, T, n, cash)
+  plotcomptime(rawmoment, m, t, n, cash, moment)
+  plotcomptime(naivemoment, m, t, n, cash, moment)
+  plotcomptime(mom2cums, m, t, n, cash)
+  plotcomptime(naivecumulant, m, t, n, cash)
 end
 
 main(ARGS)
