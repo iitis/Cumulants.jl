@@ -123,7 +123,7 @@ function main(args)
         nargs = '*'
         default = [4000]
         arg_type = Int
-      "--cash", "-c"
+      "--cache", "-c"
         help = "indicates if computional times should be saved in a file or read
           from a file"
         default = false
