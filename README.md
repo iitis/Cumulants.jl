@@ -76,16 +76,16 @@ julia> convert(Array, m)
 julia> cumulants{T <: AbstractFloat}(data::Matrix{T}, m::Int = 4, b::Int = 2)
 ```
 
-Returns a vector of `SymmetricTensor{T, i}` i = 2,3,...,m of cumulants of order 2,3,...,m. Cumulants are calculated for multivariate data represented by the matrix of size t x n, e.i. data whth n marginal variables and t realisations. 
+Returns a vector of `SymmetricTensor{T, i}` i = 1,2,3,...,m of cumulants of order 1,2,3,...,m. Cumulants are calculated for multivariate data represented by the matrix of size t x n, e.i. data whth n marginal variables and t realisations. 
 The argument b with defalt value 2, is an optional Int that determines a size of blocks in `SymmetricTensors` type.
 
 ```julia
 julia> c = cumulants(data, 3);
 
-julia> c[1]
+julia> c[2]
 SymmetricTensors.SymmetricTensor{Float64,2}(Nullable{Array{Float64,2}}[[2.0 2.0; 2.0 2.0] [2.0; 2.0]; #NULL [2.0]],2,2,3,false)
 
-julia> c[2]
+julia> c[3]
 SymmetricTensors.SymmetricTensor{Float64,3}(Nullable{Array{Float64,3}}[[0.0 0.0; 0.0 0.0]
 
 [0.0 0.0; 0.0 0.0] #NULL; #NULL #NULL]
@@ -95,13 +95,13 @@ Nullable{Array{Float64,3}}[[0.0 0.0; 0.0 0.0] [0.0; 0.0]; #NULL [0.0]],2,2,3,fal
 To convert to array given element ot the vector c, just run:
 
 ```julia
-julia> convert(Array, c[1])
+julia> convert(Array, c[2])
 3×3 Array{Float64,2}:
  2.0  2.0  2.0
  2.0  2.0  2.0
  2.0  2.0  2.0
 
- julia> convert(Array, c[2])
+ julia> convert(Array, c[3])
 3×3×3 Array{Float64,3}:
 [:, :, 1] =
  0.0  0.0  0.0
@@ -119,39 +119,6 @@ julia> convert(Array, c[1])
  0.0  0.0  0.0 
 ```
 
-To access cumulant of order m, use
-
-```julia
-julia> getcumulant{T <: AbstractFloat}(c::Vector{SymmetricTensor{T}}, m::Int)
-```
-
-```julia
-julia> convert(Array, getcumulant(c, 2))
-3×3 Array{Float64,2}:
- 2.0  2.0  2.0
- 2.0  2.0  2.0
- 2.0  2.0  2.0
- 
- julia> convert(Array, getcumulant(c, 3))
-3×3×3 Array{Float64,3}:
-[:, :, 1] =
- 0.0  0.0  0.0
- 0.0  0.0  0.0
- 0.0  0.0  0.0
-
-[:, :, 2] =
- 0.0  0.0  0.0
- 0.0  0.0  0.0
- 0.0  0.0  0.0
-
-[:, :, 3] =
- 0.0  0.0  0.0
- 0.0  0.0  0.0
- 0.0  0.0  0.0
- 
- julia> convert(Array, getcumulant(c, 1))
-ERROR: BoundsError: attempt to access "mean vector not stored"
-```
 Parallel computation available, it is efficient for large number of data realisations, e.g. t = 1000000. For parallel computation just run 
 ```julia
 julia> using Cumulants

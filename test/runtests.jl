@@ -5,7 +5,7 @@ using Distributions
 using NullableArrays
 using Iterators
 import Cumulants: indpart, momentblock, blockel, accesscum, outprodblocks,
- IndexPart, outerpodcum, naivemoment, pyramidmoment, pyramidcumulants, mom2cums,
+ IndexPart, outerprodcum, naivemoment, pyramidmoment, pyramidcumulants, mom2cums,
   usebl
 
 import SymmetricTensors: indices
@@ -61,19 +61,21 @@ facts("Cumulant helper functions") do
     @fact indexpart[2].part --> [[1,3],[2,4]]
     @fact indexpart[3].part --> [[1,4],[2,3]]
   end
+
   context("operation on blocks") do
-    c = SymmetricTensor([1.0 2.0 3.0; 2.0 4.0 6.0; 3.0 6.0 5.0])
-    blocks = accesscum((1,1,1,1), indexpart[1], c)
+    c2 = SymmetricTensor([1.0 2.0 3.0; 2.0 4.0 6.0; 3.0 6.0 5.0])
+    blocks = accesscum((1,1,1,1), indexpart[1], c2,c2)
     @fact blocks --> [[1.0 2.0; 2.0 4.0], [1.0 2.0; 2.0 4.0]]
-    @fact accesscum((1,1,1,2), indexpart[1], c) --> [[1.0 2.0; 2.0 4.0],
+    @fact accesscum((1,1,1,2), indexpart[1], c2,c2) --> [[1.0 2.0; 2.0 4.0],
     [3.0 0.0; 6.0 0.0]]
-    @fact accesscum((1,1,1,2), indexpart[3], c) --> [[3.0 0.0; 6.0 0.0],
+    @fact accesscum((1,1,1,2), indexpart[3], c2,c2) --> [[3.0 0.0; 6.0 0.0],
     [1.0 2.0; 2.0 4.0]]
     block = outprodblocks(indexpart[1], blocks)
     @fact block[:,:,1,1] --> [1.0  2.0; 2.0  4.0]
     @fact block[:,:,1,2] --> [2.0  4.0; 4.0  8.0]
-    @fact outerpodcum(4,2,c).frame[1,1,1,1].value[1,1,:,] --> [3.0, 6.0, 6.0, 12.0]
+    @fact outerprodcum(4,2,c2,c2).frame[1,1,1,1].value[1,1,:,] --> [3.0, 6.0, 6.0, 12.0]
   end
+
 end
 
 gaus_dat =  [[-0.88626   0.279571];
@@ -86,7 +88,8 @@ facts("Cumulants vs naive implementation") do
   end
   cn = [naivecumulant(data, i) for i = 2:6]
   context("Square blocks") do
-    c2, c3, c4, c5, c6 = cumulants(data, 6, 2)
+    c1, c2, c3, c4, c5, c6 = cumulants(data, 6, 2)
+    @fact convert(Array, c1) --> roughly(mean(data, 1)[:])
     @fact convert(Array, c2) --> roughly(cn[1])
     @fact convert(Array, c3) --> roughly(cn[2])
     @fact convert(Array, c4) --> roughly(cn[3])
@@ -95,7 +98,8 @@ facts("Cumulants vs naive implementation") do
   end
 
   context("Non-square blocks") do
-    c2, c3, c4, c5, c6 = cumulants(data, 6, 3)
+    c1, c2, c3, c4, c5, c6 = cumulants(data, 6, 3)
+    @fact convert(Array, c1) --> roughly(mean(data, 1)[:])
     @fact convert(Array, c2) --> roughly(cn[1])
     @fact convert(Array, c3) --> roughly(cn[2])
     @fact convert(Array, c4) --> roughly(cn[3])
@@ -128,8 +132,8 @@ facts("Tests implementation from raw moments") do
 end
 
 facts("Cumulants vs pyramid implementation square blocks") do
-  c2, c3, c4, c5, c6, c7, c8 = cumulants(data[:, 1:2], 8, 2)
-  @fact convert(Array, cumulants(gaus_dat, 3)[2]) --> roughly(zeros(Float64, 2,2,2))
+  c1, c2, c3, c4, c5, c6, c7, c8 = cumulants(data[:, 1:2], 8, 2)
+  @fact convert(Array, cumulants(gaus_dat, 3)[3]) --> roughly(zeros(Float64, 2,2,2))
   @fact convert(Array, c2) --> roughly(cn2)
   @fact convert(Array, c3) --> roughly(cn3)
   @fact convert(Array, c4) --> roughly(cn4)
@@ -143,7 +147,7 @@ addprocs(3)
 @everywhere using Cumulants
 context("Cumulants parallel implementation") do
   facts("") do
-  c2, c3, c4, c5, c6, c7, c8 = cumulants(data[:, 1:2], 8, 2)
+  c1, c2, c3, c4, c5, c6, c7, c8 = cumulants(data[:, 1:2], 8, 2)
     @fact convert(Array, c2) --> roughly(cn2)
     @fact convert(Array, c3) --> roughly(cn3)
     @fact convert(Array, c4) --> roughly(cn4)

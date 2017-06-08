@@ -89,11 +89,11 @@ is a block size. Uses multicore parallel implementation via pmap()
 
 function momentnc{T <: AbstractFloat}(x::Matrix{T}, m::Int, b::Int = 2)
   t = size(x, 1)
-  f(z::Matrix{T}) = moment1c(z, m, b)
+  #f(z::Matrix{T}) = moment1c(z, m, b)
   k = nprocs()
   r = ceil(Int, t/k)
   y = [x[ind2range(i, r, t), :] for i in 1:k]
-  ret = pmap(f, y)
+  ret = pmap(z::Matrix{T} -> moment1c(z, m, b), y)
   (r*sum(ret[1:(end-1)])+(t-(k-1)*r)*ret[end])/t
 end
 
@@ -126,10 +126,10 @@ end
 
 """
 
-    indpart(nind::Int, npart::Int)
+    indpart(nind::Int, npart::Int, e::Int = 1)
 
 Returns vector of IndexPart type, that includes partitions of set [1, 2, ..., nind]
-into npart subests of size >= 2, sizes of each subest, size of original set and
+into npart subests of size != e, sizes of each subest, size of original set and
 number of partitions
 
 ```jldoctest
@@ -141,11 +141,11 @@ julia>indpart(4,2)
 ```
 """
 
-function indpart(nind::Int, npart::Int)
+function indpart(nind::Int, npart::Int, e::Int = 1)
     part_set = IndexPart[]
     for part in partitions(1:nind, npart)
       subsetslen = map(length, part)
-      if !(1 in subsetslen)
+      if !(e in subsetslen)
         push!(part_set, IndexPart(part, subsetslen, nind, npart))
       end
     end
@@ -185,7 +185,7 @@ Array{Float64,N}[
 function accesscum{T <: AbstractFloat}(mulind::Tuple, part::IndexPart, cum::SymmetricTensor{T}...)
   blocks = Array(Array{T}, part.npart)
   for k in 1:part.npart
-    data = cum[part.subsetslen[k]-1][mulind[part.part[k]]]
+    data = cum[part.subsetslen[k]-0][mulind[part.part[k]]]
     if cum[1].sqr || !(cum[1].bln in mulind)
       blocks[k] = data
     else
@@ -239,9 +239,11 @@ function outprodblocks{T <: AbstractFloat}(inp::IndexPart, blocks::Vector{Array{
 end
 
 """
-    outerpodcum(retd::Int, npart::Int, cum::SymmetricTensor...)
+    outerprodcum(retd::Int, npart::Int, cum::SymmetricTensor...; exclpartlen::Int = 1)
 
 Returns retd dims outer products of npart cumulants in SymmetricTensor form.
+exclpartlen is a length of partitions to be excluded in calculations,
+in this algorithm exclpartlen = 1
 
 ```jldoctest
 julia> cum = SymmetricTensor([1.0 2.0 3.0; 2.0 4.0 6.0; 3.0 6.0 5.0]);
@@ -264,8 +266,9 @@ Nullable{Array{Float64,4}}[[9.0 18.0; 18.0 36.0]
 Nullable{Array{Float64,4}}[[23.0 46.0; 46.0 92.0] [45.0; 90.0]; #NULL [75.0]],2,2,3,false)
 ```
 """
-function outerpodcum{T <: AbstractFloat}(retd::Int, npart::Int, cum::SymmetricTensor{T}...)
-  parts = indpart(retd, npart)
+function outerprodcum{T <: AbstractFloat}(retd::Int, npart::Int,
+  cum::SymmetricTensor{T}...; exclpartlen::Int = 1)
+  parts = indpart(retd, npart, exclpartlen)
   prodcum = NullableArray(Array{T, retd}, fill(cum[1].bln, retd)...)
   for muli in indices(retd, cum[1].bln)
     block = zeros(T, fill(cum[1].bls, retd)...)
@@ -291,10 +294,10 @@ of cumulants of order 2, ..., m-2
 """
 
 function cumulant{T <: AbstractFloat}(X::Matrix{T}, cum::SymmetricTensor{T}...)
-  m = length(cum) + 3
+  m = length(cum) + 2
   ret =  moment(X, m, cum[1].bls)
   for sigma in 2:floor(Int, m/2)
-    ret -= outerpodcum(m, sigma, cum...)
+    ret -= outerprodcum(m, sigma, cum...)
   end
   ret
 end
@@ -303,13 +306,13 @@ end
 
     cumulants(X::Matrix, m::Int, b::Int)
 
-Returns [SymmetricTensor{Float, 2}, ..., SymmetricTensor{Float, m}], vector of
-cumulants tensors
+Returns [SymmetricTensor{Float, 1}, SymmetricTensor{Float, 2}, ...,
+SymmetricTensor{Float, m}], vector of cumulants tensors
 
 ```
 julia> M =  [[-0.88626   0.279571];[-0.704774  0.131896]];
 
-julia> convert(Array, cumulants(M, 3)[2])
+julia> convert(Array, cumulants(M, 3)[3])
 2×2×2 Array{Float64,3}:
 [:, :, 1] =
  0.0  0.0
@@ -321,24 +324,11 @@ julia> convert(Array, cumulants(M, 3)[2])
 ```
 """
 function cumulants{T <: AbstractFloat}(X::Matrix{T}, m::Int = 4, b::Int = 2)
+  cvec = Array(SymmetricTensor{T}, m)
+  cvec[1] = moment1c(X, 1, b)
   X = X .- mean(X, 1)
-  cvec = Array(SymmetricTensor{T}, m-1)
   for i = 2:m
-    @inbounds cvec[i-1] = (i < 4)? moment1c(X, i, b): cumulant(X, cvec[1:(i-3)]...)
+    @inbounds cvec[i] = (i < 4)? moment1c(X, i, b): cumulant(X, cvec[1:(i-2)]...)
   end
   cvec
-end
-
-"""
-
-    getcumulant(cum::Vector{SymmetricTensor{T}}, m::Int)
-
-Returns SymmetricTensor{Float, m}, the m'th cumulant tensor
-"""
-function getcumulant{T <: AbstractFloat}(cum::Vector{SymmetricTensor{T}}, m::Int)
-  if m == 1
-    throw(BoundsError("mean vector not stored"))
-  else
-    return cum[m-1]
-  end
 end

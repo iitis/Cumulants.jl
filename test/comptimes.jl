@@ -134,7 +134,6 @@ function main(args)
   n = parsed_args["nvar"]
   t = parsed_args["dats"]
   cash = parsed_args["cash"]
-  plotcomptime(rawmoment, m, t, n, cash, moment)
   plotcomptime(naivemoment, m, t, n, cash, moment)
   plotcomptime(mom2cums, m, t, n, cash)
   plotcomptime(naivecumulant, m, t, n, cash)

@@ -11,7 +11,7 @@ momentel{T <: AbstractFloat}(data::Matrix{T}, multind::Tuple) =
 
 """
 
-  indpart(n::Int)
+  part(n::Int)
 
 Returns Vector{Vector{Vector}} that includes all partitions of set [1, 2, ..., m]
 into subests of size > 1 and < m

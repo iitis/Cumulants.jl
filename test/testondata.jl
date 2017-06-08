@@ -2,6 +2,8 @@
 
 using NPZ
 using Cumulants
+addprocs()
+@everywhere using Cumulants
 using PyCall
 @pyimport matplotlib as mpl
 mpl.use("Agg")
@@ -75,13 +77,13 @@ Returns a vector of hyperdiagonal elements of array a
 hypdiag{T <: AbstractFloat, N}(a::Array{T, N}) = [a[fill(i,N)...] for i in 1:size(a,1)]
 
 function main()
-x = npzread("data/testdata.npz")
+x = npzread("testdata.npz")
    c = cumulants(x, 6)
    ct = [convert(Array, c[i]) for i in 1:length(c)]
-   pltdiag(["c3", "c4"], hypdiag(ct[2]), hypdiag(ct[3]))
-   pltdiag(["c5", "c6"], hypdiag(ct[4]), hypdiag(ct[5]))
-   pltall(["c3", "c4"], vec(ct[2]), vec(ct[3]))
-   pltall(["c5", "c6"], vec(ct[4]), vec(ct[5]))
+   pltdiag(["c3", "c4"], hypdiag(ct[3]), hypdiag(ct[4]))
+   pltdiag(["c5", "c6"], hypdiag(ct[5]), hypdiag(ct[6]))
+   pltall(["c3", "c4"], vec(ct[3]), vec(ct[4]))
+   pltall(["c5", "c6"], vec(ct[5]), vec(ct[6]))
 end
 
 main()

@@ -3,7 +3,6 @@ module Cumulants
   using NullableArrays
   using Iterators
   using Combinatorics
-  #using Distributions
   import SymmetricTensors: indices, ind2range, sizetest
   import Distributions: moment
 
@@ -15,5 +14,5 @@ module Cumulants
   include("naivecumulants.jl")
   include("mom2cum.jl")
 
-  export moment, cumulants, getcumulant, naivecumulant, naivemoment
+  export moment, cumulants, naivecumulant, naivemoment
 end
