@@ -1,0 +1,11 @@
+language: julia
+os:
+  - linux
+julia:
+  - release
+# - nightly
+notifications:
+  email: false
+script:
+  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - julia -e 'Pkg.clone(pwd()); Pkg.build("Cumulants"); Pkg.test("Cumulants")'
