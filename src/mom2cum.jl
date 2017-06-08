@@ -32,7 +32,8 @@ end
 Returns [Array{Float, 1}, ..., Array{Float, k}] noncentral moment tensors of
 order 1, ..., k
 """
-raw_moments_upto_k{T <: AbstractFloat}(X::Matrix{T}, k::Int = 4) = [rawmoment(X, i) for i in 1:k]
+raw_moments_upto_k{T <: AbstractFloat}(X::Matrix{T}, k::Int = 4) = 
+  [rawmoment(X, i) for i in 1:k]
 
 """
   cumulants_from_moments(raw::Vector{Array{Float, i}, m = 1:k})

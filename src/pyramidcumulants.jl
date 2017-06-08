@@ -35,7 +35,7 @@ function part(m::Int)
         @inbounds push!(parts, part)
       end
     end
-    return parts
+    parts
 end
 """
 

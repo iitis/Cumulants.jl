@@ -39,13 +39,16 @@ julia> momentblock(M, (1,1), (2,2), 2)
 ```
 """
 
-function momentblock{T <: AbstractFloat}(X::Matrix{T}, j::Tuple, dims::Tuple, b::Int)
+function momentblock{T <: AbstractFloat}(X::Matrix{T},
+                                         j::Tuple,
+                                         dims::Tuple,
+                                         b::Int)
   ret = zeros(T, dims)
   for ind = 1:(prod(dims))
     i = ind2sub(dims, ind)
     @inbounds ret[i...] = blockel(X, i, j, b)
   end
-  Array(ret)
+  ret
 end
 
 
@@ -182,7 +185,9 @@ Array{Float64,N}[
 [1.0 2.0; 2.0 4.0]]
  ```
 """
-function accesscum{T <: AbstractFloat}(mulind::Tuple, part::IndexPart, cum::SymmetricTensor{T}...)
+function accesscum{T <: AbstractFloat}(mulind::Tuple,
+                                       part::IndexPart,
+                                       cum::SymmetricTensor{T}...)
   blocks = Array(Array{T}, part.npart)
   for k in 1:part.npart
     data = cum[part.subsetslen[k]-0][mulind[part.part[k]]]
@@ -227,7 +232,8 @@ julia> outprodblocks(IndexPart(Array{Int64,1}[[1,2],[3,4]],[2,2],4,2), blocks)
  8.0  16.0
 ```
 """
-function outprodblocks{T <: AbstractFloat}(inp::IndexPart, blocks::Vector{Array{T}})
+function outprodblocks{T <: AbstractFloat}(inp::IndexPart,
+                                           blocks::Vector{Array{T}})
   b = size(blocks[1], 1)
   block = zeros(T, fill(b, inp.nind)...)
   for i = 1:(b^inp.nind)
@@ -266,8 +272,10 @@ Nullable{Array{Float64,4}}[[9.0 18.0; 18.0 36.0]
 Nullable{Array{Float64,4}}[[23.0 46.0; 46.0 92.0] [45.0; 90.0]; #NULL [75.0]],2,2,3,false)
 ```
 """
-function outerprodcum{T <: AbstractFloat}(retd::Int, npart::Int,
-  cum::SymmetricTensor{T}...; exclpartlen::Int = 1)
+function outerprodcum{T <: AbstractFloat}(retd::Int,
+                                          npart::Int,
+                                          cum::SymmetricTensor{T}...;
+                                          exclpartlen::Int = 1)
   parts = indpart(retd, npart, exclpartlen)
   prodcum = NullableArray(Array{T, retd}, fill(cum[1].bln, retd)...)
   for muli in indices(retd, cum[1].bln)

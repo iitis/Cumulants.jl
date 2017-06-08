@@ -155,5 +155,5 @@ function naivecumulant{T<:AbstractFloat}(X::Matrix{T}, m::Int = 4)
       @inbounds cumulant[ind...] = cumel(X, ind)
     end
   end
-  return cumulant
+  cumulant
 end
