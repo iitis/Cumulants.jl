@@ -92,11 +92,13 @@ is a block size. Uses multicore parallel implementation via pmap()
 
 function momentnc{T <: AbstractFloat}(x::Matrix{T}, m::Int, b::Int = 2)
   t = size(x, 1)
-  #f(z::Matrix{T}) = moment1c(z, m, b)
+  f(z::Matrix{T}) = moment1c(z, m, b)
+  #k = max(2, nprocs()-1)
   k = nprocs()
   r = ceil(Int, t/k)
   y = [x[ind2range(i, r, t), :] for i in 1:k]
-  ret = pmap(z::Matrix{T} -> moment1c(z, m, b), y)
+  ret = pmap(f, y)
+  #ret = pmap(z::Matrix{T} -> moment1c(z, m, b), y)
   (r*sum(ret[1:(end-1)])+(t-(k-1)*r)*ret[end])/t
 end
 

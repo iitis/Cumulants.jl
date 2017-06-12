@@ -20,7 +20,7 @@ function pltspeedup(comptimes::Array{Float64}, m::Int, n::Vector{Int}, T::Vector
    label::String)
   mpl.rc("text", usetex=true)
   mpl.rc("font", family="serif", size = 12)
-  fig, ax = subplots(figsize = (4.6, 4.6))
+  fig, ax = subplots(figsize = (2.3, 4.6))
   for i in 1:size(comptimes, 2)
     t = T[i]
     ax[:plot](n, comptimes[:,i], "--x", label= "M = $m, T = $t")
@@ -77,7 +77,7 @@ function compspeedups(ccalc::Function, m::Int, T::Vector{Int}, n::Vector{Int}, f
 end
 
 """
-  plotcomptime(ccalc::Function, M::Int, T::Vector{Int}, n::Vector{Int}, cash::Bool)
+  plotcomptime(ccalc::Function, M::Int, T::Vector{Int}, n::Vector{Int}, cache::Bool)
 
 Returns a figure in .eps format of the computional speedup of cumulants function
 vs ccalc function, following functions are availavle: naivecumulant,
@@ -86,10 +86,10 @@ mom2cums, pyramidcumulants.
 M is cumulant's order, n vector of numbers of variables, T vector of numbers of
 their realisations.
 """
-function plotcomptime(ccalc::Function, m::Int, T::Vector{Int}, n::Vector{Int}, cash::Bool, f::Function = cumulants)
+function plotcomptime(ccalc::Function, m::Int, T::Vector{Int}, n::Vector{Int}, cache::Bool, f::Function = cumulants)
   filename = replace("res2/"*string(ccalc)*string(m)*string(T)*string(n)*".npz", "[", "_")
   filename = replace(filename, "]", "")
-  if isfile(filename)*cash
+  if isfile(filename)*cache
     compt = npzread(filename)
   else
     compt = compspeedups(ccalc, m, T, n, f)
@@ -133,10 +133,10 @@ function main(args)
   m = parsed_args["order"]
   n = parsed_args["nvar"]
   t = parsed_args["dats"]
-  cash = parsed_args["cash"]
-  plotcomptime(naivemoment, m, t, n, cash, moment)
-  plotcomptime(mom2cums, m, t, n, cash)
-  plotcomptime(naivecumulant, m, t, n, cash)
+  cache = parsed_args["cache"]
+  plotcomptime(naivemoment, m, t, n, cache, moment)
+  plotcomptime(mom2cums, m, t, n, cache)
+  plotcomptime(naivecumulant, m, t, n, cache)
 end
 
 main(ARGS)
