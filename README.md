@@ -1,5 +1,5 @@
 # Cumulants.jl
-[![Build Status](https://travis-ci.org/kdomino/Cumulants.jl.svg?branch=master)](https://travis-ci.org/kdomino/Cumulants.jl)
+[![Build Status](https://travis-ci.org/ZKSI/Cumulants.jl.svg?branch=master)](https://travis-ci.org/ZKSI/Cumulants.jl)
 
 Calculates Cummulant tensors of any order for multivariate data.
 Functions return tensor or array of tensors in `SymmetricTensors` type. Raquires SymmetricTensors.jl "https://github.com/kdomino/SymmetricTensors.jl". To convert to array, run:
