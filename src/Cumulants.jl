@@ -7,7 +7,7 @@ module Cumulants
   import Distributions: moment
 
   #calculates moments and cumulants using block structures (SymmetricTensors)
-  include("cumulants.jl")
+  include("cumulant.jl")
 
   #other
   include("pyramidcumulants.jl")
