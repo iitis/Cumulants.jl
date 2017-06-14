@@ -202,7 +202,7 @@ The default values are `t = 4000`, `n = 22 24` and `m = 4`. For good performance
 
 The script `gandata.jl` generates `t = 75000000` realisations of `n = 4` variate data form the `t`-multivariate distribution with `\nu = 14` degrees of freedom. The script `testondata.jl` computes cumulant tensors of order `m = 2,3,...,6` of those data and displays some of cumulants valuse on charts. For superdiagonal values the comparison with theoretical cumulants values of the distrubution is supplied.
 
-#Citing this work
+# Citing this work
 
 
-Krzysztof Domino, Piotr Gawron, Łukasz Pawela, The tensor network representation of high order cumulant and algorithm for their calculation
+Krzysztof Domino, Piotr Gawron, Łukasz Pawela, *The tensor network representation of high order cumulant and algorithm for their calculation*, [arXiv:1701.05420](https://arxiv.org/abs/1701.05420)
