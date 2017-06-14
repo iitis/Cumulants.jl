@@ -17,10 +17,22 @@ julia> mom_el(M, (1,1), (1,1), 2)
 julia> mom_el(M, (1,1), (2,2), 2)
 37.0
 ```
+
 """
 
-blockel{T <: AbstractFloat}(X::Matrix{T}, i::Tuple, j::Tuple, b::Int) =
-    mean(mapreduce(k::Int -> X[:,(j[k]-1)*b+i[k]], .*, 1:length(i)))
+function blockel{T <: AbstractFloat}(data::Matrix{T}, mi::Tuple, mj::Tuple, b::Int)
+  ret = 0.
+  t = size(data, 1)
+  for l in 1:t
+    temp = 1.
+    for k in 1:length(mi)
+      @inbounds ind = (mj[k]-1)*b+mi[k]
+      @inbounds temp *= data[l,ind]
+    end
+    ret += temp
+  end
+  ret/t
+end
 
 """
 

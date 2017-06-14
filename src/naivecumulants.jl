@@ -13,8 +13,18 @@ julia> momel(M, (1,1,1,1))
 
 ```
 """
-momel{T <: AbstractFloat}(X::Matrix{T}, ind::Tuple) =
-    mean(mapreduce(i::Int -> X[:,ind[i]], .*, 1:length(ind)))
+function momel{T <: AbstractFloat}(data::Matrix{T}, multind::Tuple)
+  ret = 0.
+  t = size(data, 1)
+  for l in 1:t
+    temp = 1.
+    for i in multind
+      @inbounds temp *= data[l,i]
+    end
+    ret += temp
+  end
+  ret/t
+end
 
 
 """

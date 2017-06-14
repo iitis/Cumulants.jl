@@ -19,16 +19,18 @@ Returns a figure in .eps format of the computional speedup of cumulants function
 function pltspeedup(comptimes::Array{Float64}, m::Int, n::Vector{Int}, T::Vector{Int},
    label::String)
   mpl.rc("text", usetex=true)
-  mpl.rc("font", family="serif", size = 12)
-  fig, ax = subplots(figsize = (2.3, 4.6))
+  mpl.rc("font", family="serif", size = 8)
+  fig, ax = subplots(figsize = (3, 2.3))
   for i in 1:size(comptimes, 2)
     t = T[i]
-    ax[:plot](n, comptimes[:,i], "--x", label= "M = $m, T = $t")
+    ax[:plot](n, comptimes[:,i], "--x", label= "t = $t")
   end
-  PyPlot.title("$label")
-  ax[:set_ylabel]("speedup of computional time")
-  ax[:set_xlabel]("tensor size")
-  ax[:legend](fontsize = 12, loc = 4, ncol = 1)
+  #PyPlot.title("$label")
+  #ax[:set_ylabel]("speedup of computional time")
+  PyPlot.ylabel("speedup of computional time", labelpad = -3)
+  PyPlot.xlabel("m", labelpad = -3)
+  #ax[:set_xlabel]("tensor size - m")
+  ax[:legend](fontsize = 8, loc = 2, ncol = 1)
   name = replace("$label$m$T$n", "[", "_")
   name = replace(name, "]", "")
   fig[:savefig]("res2/"*name*".eps")
@@ -93,7 +95,7 @@ function plotcomptime(ccalc::Function, m::Int, T::Vector{Int}, n::Vector{Int}, c
     compt = npzread(filename)
   else
     compt = compspeedups(ccalc, m, T, n, f)
-    if cash
+    if cache
       npzwrite(filename, compt)
     end
   end
