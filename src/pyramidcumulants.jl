@@ -53,6 +53,7 @@ function pyramidmoment{T<:AbstractFloat}(data::Matrix{T}, m::Int)
     ret = zeros(fill(n, m)...)
     for ind in indices(m, n)
       @inbounds temp = momel(data, ind)
+      #@inbounds temp = blockel(data, ind, ind, 0)
       for per in collect(permutations([ind...]))
         @inbounds ret[per...] = temp
       end

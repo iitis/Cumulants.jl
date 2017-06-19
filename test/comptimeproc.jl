@@ -46,7 +46,7 @@ end
 
 
 function main()
-  plot(50000, 50, 4)
+  plot(100000, 52, 4)
 end
 
 main()

@@ -7,6 +7,7 @@ using ArgParse
 import SymmetricTensors: indices
 import Cumulants: rawmoment, mom2cums, moment
 
+
 """
   comptime(data::Matrix{Float}, f::Function, m::Int)
 

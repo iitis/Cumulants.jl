@@ -17,6 +17,7 @@ julia> mom_el(M, (1,1), (1,1), 2)
 julia> mom_el(M, (1,1), (2,2), 2)
 37.0
 ```
+
 """
 
 function blockel{T <: AbstractFloat}(data::Matrix{T}, mi::Tuple, mj::Tuple, b::Int)
