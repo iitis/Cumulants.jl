@@ -1,3 +1,5 @@
+using TensorOperations
+
 """
   rawmoment(X::Matrix{T}, m::Int = 4)
 
@@ -7,23 +9,21 @@ pyramid structures and blocks
 Returns Array{Float, m}, the m'th moment's tensor
 """
 
-function rawmoment{T <: AbstractFloat}(X::Matrix{T}, m::Int = 4)
+function rawmoment{T <: AbstractFloat}(X::Matrix{T}, m::Int = 4)
   t,n = size(X)
   if m == 1
     return mean(X, 1)[1,:]
   else
-    y = zeros(T, fill(n, m)...)
+    y = zeros(T, n^m)
     for i in 1:t
-      @inbounds xi = X[i, :]
-      z = xi
-      for j in 2:m
-        @inbounds z = reshape(kron(xi', vec(z)), fill(n, j)...)
-        #@inbounds z = reshape(vec(z)*xi', fill(n, j)...)
+      z = [1.]
+      for j in 1:m
+        @inbounds z = kron(X[i, :], z)
       end
-      y = y + z
+      @inbounds y += z
     end
   end
-  y/t
+  reshape(y/t, fill(n, m)...)
 end
 
 """
@@ -32,7 +32,7 @@ end
 Returns [Array{Float, 1}, ..., Array{Float, k}] noncentral moment tensors of
 order 1, ..., k
 """
-raw_moments_upto_k{T <: AbstractFloat}(X::Matrix{T}, k::Int = 4) = 
+raw_moments_upto_k{T <: AbstractFloat}(X::Matrix{T}, k::Int = 4) =
   [rawmoment(X, i) for i in 1:k]
 
 """
@@ -88,7 +88,7 @@ end
 """
   cumulatsfrommoments(x::Matrix{Float}, k::Int)
 
-Returns a vector of 2, .., k dims Arrays{Float} of cumulant tensors
+Returns a vector of 1,2, .., k dims Arrays{Float} of cumulant tensors
 """
 mom2cums{T <: AbstractFloat}(x::Matrix{T}, k::Int) =
-cumulants_from_moments(raw_moments_upto_k(x, k))[2:end]
+  cumulants_from_moments(raw_moments_upto_k(x, k))

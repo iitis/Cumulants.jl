@@ -2,109 +2,66 @@
 
 using Cumulants
 using Distributions
-using PyCall
-@pyimport matplotlib as mpl
-mpl.use("Agg")
-using PyPlot
-using NPZ
+using JLD
 using ArgParse
 import SymmetricTensors: indices
-import Cumulants: rawmoment, mom2cums
-"""
-  pltspeedup(comptimes::Array{Float}, m::Int, n::Vector{Int}, T::Vector{Int}, label::String)
-
-Returns a figure in .eps format of the computional speedup of cumulants function
-"""
-
-function pltspeedup(comptimes::Array{Float64}, m::Int, n::Vector{Int}, T::Vector{Int},
-   label::String)
-  mpl.rc("text", usetex=true)
-  mpl.rc("font", family="serif", size = 12)
-  fig, ax = subplots(figsize = (2.3, 4.6))
-  for i in 1:size(comptimes, 2)
-    t = T[i]
-    ax[:plot](n, comptimes[:,i], "--x", label= "M = $m, T = $t")
-  end
-  PyPlot.title("$label")
-  ax[:set_ylabel]("speedup of computional time")
-  ax[:set_xlabel]("tensor size")
-  ax[:legend](fontsize = 12, loc = 4, ncol = 1)
-  name = replace("$label$m$T$n", "[", "_")
-  name = replace(name, "]", "")
-  fig[:savefig]("res2/"*name*".eps")
-end
+import Cumulants: rawmoment, mom2cums, moment
 
 """
-  comptime(data::Matrix{Float}, ccalcf::Function, M::Int)
+  comptime(data::Matrix{Float}, f::Function, m::Int)
 
-Returns Float, a computional time of m'th cumulant calulation of multivariate data,
-given cumulant's order m and cumulats calculation function ccalc, following
-functions are availavle: cumulants, naivecumulant, mom2cums, pyramidcumulants
+Returns Float, a computional time of m'th statisitics calulation of multivariate data
 """
 
-function comptime(data::Matrix{Float64}, ccalc::Function, m::Int)
-  ccalc(data[1:4, 1:4], m)
+function comptime(data::Matrix{Float64}, f::Function, m::Int)
+  f(data[1:4, 1:4], m)
   t = time_ns()
-  ccalc(data, m)
-  Float64(time_ns()-t)/1.0e9
-end
-
-function comptime(data::Matrix{Float64}, ccalc::Function, m::Int, b::Int)
-  ccalc(data[1:4, 1:4], m, b)
-  t = time_ns()
-  ccalc(data, m, b)
+  f(data, m)
   Float64(time_ns()-t)/1.0e9
 end
 
 """
-  compspeedups(f::Function, M::Int, T::Vector{Int}, n::Vector{Int})
+  comtimes(m::Int, t::Vector{Int}, n::Vector{Int}, f::Function)
 
-Returns Matrix, a computional speedup of m'th cumulant calculation of multivariate data,
-given cumulant's order M, number of variables n, number of data realisation T,
- and cumulats calculation function ccalc, following functions are availavle:
- naivecumulant, mom2cums, pyramidcumulants
+Returns Matrix, a computional time of m'th statisitics of multivariate data,
+given statisitcs's order m, number of variables n, number of data realisation t
 """
 
-function compspeedups(ccalc::Function, m::Int, T::Vector{Int}, n::Vector{Int}, f::Function)
-  compt = zeros(length(n), length(T))
-  for i in 1:length(T)
+function comtimes(m::Int, t::Vector{Int}, n::Vector{Int}, f::Function)
+  compt = zeros(length(n), length(t))
+  for i in 1:length(t)
     for j in 1:length(n)
-      data = randn(T[i], n[j])
-      compt[j,i] = comptime(data, ccalc, m)/comptime(data, f, m, 3)
+      data = randn(t[i], n[j])
+      compt[j,i] = comptime(data, f, m)
     end
   end
   compt
 end
 
 """
-  plotcomptime(ccalc::Function, M::Int, T::Vector{Int}, n::Vector{Int}, cache::Bool)
+  savecomptime(m::Int, T::Vector{Int}, n::Vector{Int}, cache::Bool)
 
-Returns a figure in .eps format of the computional speedup of cumulants function
-vs ccalc function, following functions are availavle: naivecumulant,
-mom2cums, pyramidcumulants.
+Save a file in jld format of the computional times of moment, naivemoment, rawmoment
 
-M is cumulant's order, n vector of numbers of variables, T vector of numbers of
-their realisations.
 """
-function plotcomptime(ccalc::Function, m::Int, T::Vector{Int}, n::Vector{Int}, cache::Bool, f::Function = cumulants)
-  filename = replace("res2/"*string(ccalc)*string(m)*string(T)*string(n)*".npz", "[", "_")
+function savecomptime(m::Int, t::Vector{Int}, n::Vector{Int}, cache::Bool)
+  filename = replace("res2/"*string(m)*string(t)*string(n)*".jld", "[", "_")
   filename = replace(filename, "]", "")
-  if isfile(filename)*cache
-    compt = npzread(filename)
-  else
-    compt = compspeedups(ccalc, m, T, n, f)
-    if cash
-      npzwrite(filename, compt)
-    end
+  if !(isfile(filename) & cache)
+    fs = [moment, naivemoment, rawmoment, cumulants, mom2cums, naivecumulant]
+    compt = Dict{String, Any}("$f"[11:end] => comtimes(m, t, n, f) for f in fs)
+    push!(compt, "t" => t)
+    push!(compt, "n" => n)
+    push!(compt, "m" => m)
+    save(filename, compt)
   end
-  pltspeedup(compt, m, n, T, string(ccalc))
 end
 
 """
   main(args)
 
-Returns plots of the speedup of using cumulants function vs. naivecumulants and
-mom2cums implementations. Takes optional arguments from bash
+Returns file of the speedup of momant, naivemoment rawmoment, ....
+Takes optional arguments from bash
 """
 function main(args)
   s = ArgParseSettings("description")
@@ -126,7 +83,7 @@ function main(args)
       "--cache", "-c"
         help = "indicates if computional times should be saved in a file or read
           from a file"
-        default = false
+        default = true
         arg_type = Bool
     end
   parsed_args = parse_args(s)
@@ -134,9 +91,7 @@ function main(args)
   n = parsed_args["nvar"]
   t = parsed_args["dats"]
   cache = parsed_args["cache"]
-  plotcomptime(naivemoment, m, t, n, cache, moment)
-  plotcomptime(mom2cums, m, t, n, cache)
-  plotcomptime(naivecumulant, m, t, n, cache)
+  savecomptime(m, t, n, cache)
 end
 
 main(ARGS)

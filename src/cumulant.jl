@@ -19,8 +19,19 @@ julia> mom_el(M, (1,1), (2,2), 2)
 ```
 """
 
-blockel{T <: AbstractFloat}(X::Matrix{T}, i::Tuple, j::Tuple, b::Int) =
-    mean(mapreduce(k::Int -> X[:,(j[k]-1)*b+i[k]], .*, 1:length(i)))
+function blockel{T <: AbstractFloat}(data::Matrix{T}, mi::Tuple, mj::Tuple, b::Int)
+  ret = 0.
+  t = size(data, 1)
+  for l in 1:t
+    temp = 1.
+    for k in 1:length(mi)
+      @inbounds ind = (mj[k]-1)*b+mi[k]
+      @inbounds temp *= data[l,ind]
+    end
+    ret += temp
+  end
+  ret/t
+end
 
 """
 
@@ -93,12 +104,10 @@ is a block size. Uses multicore parallel implementation via pmap()
 function momentnc{T <: AbstractFloat}(x::Matrix{T}, m::Int, b::Int = 2)
   t = size(x, 1)
   f(z::Matrix{T}) = moment1c(z, m, b)
-  #k = max(2, nprocs()-1)
-  k = nprocs()
+  k = max(2, nprocs()-1)
   r = ceil(Int, t/k)
   y = [x[ind2range(i, r, t), :] for i in 1:k]
   ret = pmap(f, y)
-  #ret = pmap(z::Matrix{T} -> moment1c(z, m, b), y)
   (r*sum(ret[1:(end-1)])+(t-(k-1)*r)*ret[end])/t
 end
 

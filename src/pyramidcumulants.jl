@@ -2,15 +2,6 @@
 
 """
 
-  momentel(data::Matrix{T}, multind::Tuple)
-
-Returns number, the single element of moment's tensor.
-"""
-momentel{T <: AbstractFloat}(data::Matrix{T}, multind::Tuple) =
-  mean(mapreduce(i -> data[:,multind[i]], .*, 1:length(multind)))
-
-"""
-
   part(n::Int)
 
 Returns Vector{Vector{Vector}} that includes all partitions of set [1, 2, ..., m]
