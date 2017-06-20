@@ -105,7 +105,7 @@ is a block size. Uses multicore parallel implementation via pmap()
 function momentnc{T <: AbstractFloat}(x::Matrix{T}, m::Int, b::Int = 2)
   t = size(x, 1)
   f(z::Matrix{T}) = moment1c(z, m, b)
-  k = max(2, nprocs()-1)
+  k = length(workers())
   r = ceil(Int, t/k)
   y = [x[ind2range(i, r, t), :] for i in 1:k]
   ret = pmap(f, y)
@@ -121,7 +121,7 @@ is a block size. Calls 1 core or multicore moment function.
 """
 
 moment{T <: AbstractFloat}(X::Matrix{T}, m::Int, b::Int=2) =
-  (nprocs()==1)? moment1c(X, m, b): momentnc(X, m, b)
+  (length(workers())>1)? momentnc(X, m, b):moment1c(X, m, b)
 
 # ---- following code is used to caclulate cumulants in SymmetricTensor form----
 """
