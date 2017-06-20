@@ -1,4 +1,34 @@
-using TensorOperations
+"""
+  outer(a::Vector{Float}, b::Vector{Float})
+
+Return Vector{Float} , vectorsed outer/kroneker product o vectors a and b
+Auxiliary function for rawmoment
+"""
+function outer{T <: AbstractFloat}(a::Vector{T}, b::Vector{T})
+    sa = size(a,1)
+    sb = size(b,1)
+    R = Vector{T}(sa*sb)
+    m = 1
+    for i = 1:sb, j = 1:sa
+        @inbounds R[m] = a[j]*b[i]
+        m += 1
+    end
+    return R
+end
+
+"""
+  updvec!(A::Vector{Float}, B::Vector{Float})
+
+Returns updated Vector{Float} A, by adding elementwisely Vector{Float} B
+Auxiliary function for rawmoment 
+"""
+function updvec!{T<: AbstractFloat}(A::Vector{T}, B::Vector{T})
+  n = size(A, 1)
+  for i=1:n
+    @inbounds A[i] += B[i]
+  end
+  return A
+end
 
 """
   rawmoment(X::Matrix{T}, m::Int = 4)
@@ -15,12 +45,13 @@ function rawmoment{T <: AbstractFloat}(X::Matrix{T}, m::Int = 4)
     return mean(X, 1)[1,:]
   else
     y = zeros(T, n^m)
+    z = T[1.]
     for i in 1:t
-      z = [1.]
       for j in 1:m
-        @inbounds z = kron(X[i, :], z)
+        z = outer(X[i, :], z)
       end
-      @inbounds y += z
+      updvec!(y, z)
+      z = T[1.]
     end
   end
   reshape(y/t, fill(n, m)...)
@@ -74,6 +105,23 @@ Returns Array{Float, n} the n'th cumulant tensor
 
 """
 function onecumulant{T <: AbstractFloat}(ind::Tuple, raw::Vector{Array{T}},
+  spp::Vector, sppl::Vector{Vector{Int}}, dpp::Vector{Int})
+  ret = zero(T)
+  for i in 1:length(spp)
+    part = spp[i]
+    beln = length(part)
+    k = sppl[i]
+    temp = one(T)
+    for r in 1:beln
+      temp *= raw[k[r]][ind[part[r]]...]
+    end
+    ret += dpp[beln]*temp
+  end
+  ret
+end
+
+
+function onecumulant11{T <: AbstractFloat}(ind::Tuple, raw::Vector{Array{T}},
   spp::Vector, sppl::Vector{Vector{Int}}, dpp::Vector{Int})
   ret = zero(T)
   for i in 1:length(spp)

@@ -39,4 +39,4 @@ function singleplot(d::Dict, name::String, compare::String)
   fig[:savefig]("res2/"*name*".eps")
 end
 
-pltspeedup("4_4000_22,24.jld")
+pltspeedup("4_50000_10,15,20,25,30,35.jld")

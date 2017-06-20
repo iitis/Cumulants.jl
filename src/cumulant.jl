@@ -244,6 +244,7 @@ julia> outprodblocks(IndexPart(Array{Int64,1}[[1,2],[3,4]],[2,2],4,2), blocks)
  8.0  16.0
 ```
 """
+
 function outprodblocks{T <: AbstractFloat}(inp::IndexPart,
                                            blocks::Vector{Array{T}})
   b = size(blocks[1], 1)
@@ -251,7 +252,7 @@ function outprodblocks{T <: AbstractFloat}(inp::IndexPart,
   for i = 1:(b^inp.nind)
     muli = ind2sub((fill(b, inp.nind)...), i)
     @inbounds block[muli...] =
-    mapreduce(i -> blocks[i][muli[inp.part[i]]...], *, 1:inp.npart)
+    mapreduce(k -> blocks[k][muli[inp.part[k]]...], *, 1:inp.npart)
   end
   block
 end
