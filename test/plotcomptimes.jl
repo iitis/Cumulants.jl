@@ -5,6 +5,7 @@ using PyPlot
 using JLD
 
 
+
 """
   pltspeedup(comptimes::Array{Float}, m::Int, n::Vector{Int}, T::Vector{Int}, label::String)
 
@@ -39,4 +40,4 @@ function singleplot(d::Dict, name::String, compare::String)
   fig[:savefig]("res2/"*name*".eps")
 end
 
-pltspeedup("4_50000_10,15,20,25,30,35.jld")
+pltspeedup("4_50000_30.jld")
