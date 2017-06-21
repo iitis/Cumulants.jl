@@ -86,30 +86,31 @@ facts("Cumulants vs naive implementation") do
   context("Test naive implentation") do
     @fact naivecumulant(gaus_dat, 3) --> roughly(zeros(Float64, 2,2,2))
   end
-  cn = [naivecumulant(data, i) for i = 2:6]
+  cn = [naivecumulant(data, i) for i = 1:6]
   context("Square blocks") do
     c1, c2, c3, c4, c5, c6 = cumulants(data, 6, 2)
-    @fact convert(Array, c1) --> roughly(mean(data, 1)[:])
-    @fact convert(Array, c2) --> roughly(cn[1])
-    @fact convert(Array, c3) --> roughly(cn[2])
-    @fact convert(Array, c4) --> roughly(cn[3])
-    @fact convert(Array, c5) --> roughly(cn[4])
-    @fact convert(Array, c6) --> roughly(cn[5])
+    @fact convert(Array, c1) --> roughly(cn[1])
+    @fact convert(Array, c2) --> roughly(cn[2])
+    @fact convert(Array, c3) --> roughly(cn[3])
+    @fact convert(Array, c4) --> roughly(cn[4])
+    @fact convert(Array, c5) --> roughly(cn[5])
+    @fact convert(Array, c6) --> roughly(cn[6])
   end
 
   context("Non-square blocks") do
     c1, c2, c3, c4, c5, c6 = cumulants(data, 6, 3)
-    @fact convert(Array, c1) --> roughly(mean(data, 1)[:])
-    @fact convert(Array, c2) --> roughly(cn[1])
-    @fact convert(Array, c3) --> roughly(cn[2])
-    @fact convert(Array, c4) --> roughly(cn[3])
-    @fact convert(Array, c5) --> roughly(cn[4])
-    @fact convert(Array, c6) --> roughly(cn[5])
+    @fact convert(Array, c1) --> roughly(cn[1])
+    @fact convert(Array, c2) --> roughly(cn[2])
+    @fact convert(Array, c3) --> roughly(cn[3])
+    @fact convert(Array, c4) --> roughly(cn[4])
+    @fact convert(Array, c5) --> roughly(cn[5])
+    @fact convert(Array, c6) --> roughly(cn[6])
   end
 end
 
 facts("test pyramid implementation") do
-  cn2, cn3, cn4, cn5, cn6, cn7, cn8 = pyramidcumulants(gaus_dat, 8)
+  cn1, cn2, cn3, cn4, cn5, cn6, cn7, cn8 = pyramidcumulants(gaus_dat, 8)
+  @fact cn1 --> roughly(naivecumulant(gaus_dat, 1), 1e-6)
   @fact cn2 --> roughly(naivecumulant(gaus_dat, 2))
   @fact cn3 --> roughly(zeros(Float64, 2,2,2))
   @fact cn4 --> roughly(zeros(Float64, 2,2,2,2), 1e-3)
@@ -119,21 +120,20 @@ facts("test pyramid implementation") do
   @fact cn8 --> roughly(zeros(Float64, 2,2,2,2,2,2,2,2), 1e-5)
 end
 
-cn2, cn3, cn4, cn5, cn6, cn7, cn8 = pyramidcumulants(data[:, 1:2], 8)
+  cn1, cn2, cn3, cn4, cn5, cn6, cn7, cn8 = pyramidcumulants(data[:, 1:2], 8)
 facts("Tests implementation from raw moments") do
-  cm2, cm3, cm4, cm5, cm6, cm7, cm8 = mom2cums(data[:, 1:2], 8)
+  cm1, cm2, cm3, cm4, cm5, cm6 = mom2cums(data[:, 1:2], 6)
   @fact cm2 --> roughly(cn2)
   @fact cm3 --> roughly(cn3)
   @fact cm4 --> roughly(cn4)
   @fact cm5 --> roughly(cn5)
   @fact cm6 --> roughly(cn6)
-  @fact cm7 --> roughly(cn7)
-  @fact cm8 --> roughly(cn8)
 end
 
 facts("Cumulants vs pyramid implementation square blocks") do
   c1, c2, c3, c4, c5, c6, c7, c8 = cumulants(data[:, 1:2], 8, 2)
   @fact convert(Array, cumulants(gaus_dat, 3)[3]) --> roughly(zeros(Float64, 2,2,2))
+  @fact convert(Array, c1) --> roughly(cn1)
   @fact convert(Array, c2) --> roughly(cn2)
   @fact convert(Array, c3) --> roughly(cn3)
   @fact convert(Array, c4) --> roughly(cn4)
@@ -157,5 +157,3 @@ context("Cumulants parallel implementation") do
     @fact convert(Array, c8) --> roughly(cn8);
   end
 end
-
-#rmprocs(procs())

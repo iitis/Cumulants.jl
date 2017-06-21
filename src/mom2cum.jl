@@ -1,4 +1,36 @@
 """
+  outer(a::Vector{Float}, b::Vector{Float})
+
+Return Vector{Float} , vectorsed outer/kroneker product o vectors a and b
+Auxiliary function for rawmoment
+"""
+function outer{T <: AbstractFloat}(a::Vector{T}, b::Vector{T})
+    sa = size(a,1)
+    sb = size(b,1)
+    R = Vector{T}(sa*sb)
+    m = 1
+    for i = 1:sb, j = 1:sa
+        @inbounds R[m] = a[j]*b[i]
+        m += 1
+    end
+    return R
+end
+
+"""
+  updvec!(A::Vector{Float}, B::Vector{Float})
+
+Returns updated Vector{Float} A, by adding elementwisely Vector{Float} B
+Auxiliary function for rawmoment 
+"""
+function updvec!{T<: AbstractFloat}(A::Vector{T}, B::Vector{T})
+  n = size(A, 1)
+  for i=1:n
+    @inbounds A[i] += B[i]
+  end
+  return A
+end
+
+"""
   rawmoment(X::Matrix{T}, m::Int = 4)
 
 Simmilar to raw_moments_upto_p in R, does not expoloit tensor's symmetry
@@ -7,23 +39,22 @@ pyramid structures and blocks
 Returns Array{Float, m}, the m'th moment's tensor
 """
 
-function rawmoment{T <: AbstractFloat}(X::Matrix{T}, m::Int = 4)
+function rawmoment{T <: AbstractFloat}(X::Matrix{T}, m::Int = 4)
   t,n = size(X)
   if m == 1
     return mean(X, 1)[1,:]
   else
-    y = zeros(T, fill(n, m)...)
+    y = zeros(T, n^m)
+    z = T[1.]
     for i in 1:t
-      @inbounds xi = X[i, :]
-      z = xi
-      for j in 2:m
-        @inbounds z = reshape(kron(xi', vec(z)), fill(n, j)...)
-        #@inbounds z = reshape(vec(z)*xi', fill(n, j)...)
+      for j in 1:m
+        z = outer(X[i, :], z)
       end
-      y = y + z
+      updvec!(y, z)
+      z = T[1.]
     end
   end
-  y/t
+  reshape(y/t, fill(n, m)...)
 end
 
 """
@@ -32,7 +63,7 @@ end
 Returns [Array{Float, 1}, ..., Array{Float, k}] noncentral moment tensors of
 order 1, ..., k
 """
-raw_moments_upto_k{T <: AbstractFloat}(X::Matrix{T}, k::Int = 4) = 
+raw_moments_upto_k{T <: AbstractFloat}(X::Matrix{T}, k::Int = 4) =
   [rawmoment(X, i) for i in 1:k]
 
 """
@@ -80,6 +111,23 @@ function onecumulant{T <: AbstractFloat}(ind::Tuple, raw::Vector{Array{T}},
     part = spp[i]
     beln = length(part)
     k = sppl[i]
+    temp = one(T)
+    for r in 1:beln
+      temp *= raw[k[r]][ind[part[r]]...]
+    end
+    ret += dpp[beln]*temp
+  end
+  ret
+end
+
+
+function onecumulant11{T <: AbstractFloat}(ind::Tuple, raw::Vector{Array{T}},
+  spp::Vector, sppl::Vector{Vector{Int}}, dpp::Vector{Int})
+  ret = zero(T)
+  for i in 1:length(spp)
+    part = spp[i]
+    beln = length(part)
+    k = sppl[i]
     ret += dpp[beln]*mapreduce(i->raw[k[i]][ind[part[i]]...], *, 1:beln)
   end
   ret
@@ -88,7 +136,7 @@ end
 """
   cumulatsfrommoments(x::Matrix{Float}, k::Int)
 
-Returns a vector of 2, .., k dims Arrays{Float} of cumulant tensors
+Returns a vector of 1,2, .., k dims Arrays{Float} of cumulant tensors
 """
 mom2cums{T <: AbstractFloat}(x::Matrix{T}, k::Int) =
-cumulants_from_moments(raw_moments_upto_k(x, k))[2:end]
+  cumulants_from_moments(raw_moments_upto_k(x, k))

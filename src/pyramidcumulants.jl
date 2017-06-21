@@ -2,15 +2,6 @@
 
 """
 
-  momentel(data::Matrix{T}, multind::Tuple)
-
-Returns number, the single element of moment's tensor.
-"""
-momentel{T <: AbstractFloat}(data::Matrix{T}, multind::Tuple) =
-  mean(mapreduce(i -> data[:,multind[i]], .*, 1:length(multind)))
-
-"""
-
   part(n::Int)
 
 Returns Vector{Vector{Vector}} that includes all partitions of set [1, 2, ..., m]
@@ -59,7 +50,7 @@ julia> pyramidmoment(M, 3)
 """
 function pyramidmoment{T<:AbstractFloat}(data::Matrix{T}, m::Int)
     n = size(data,2)
-    ret = zeros(fill(n, m)...)
+    ret = zeros(T, fill(n, m)...)
     for ind in indices(m, n)
       @inbounds temp = momel(data, ind)
       for per in collect(permutations([ind...]))
@@ -81,7 +72,7 @@ function mixedel{T<:AbstractFloat}(cum::Vector{Array{T}}, mulind::Tuple,
     for k = 1:length(parts)
         prod = 1.
         for el in parts[k]
-            @inbounds prod*= cum[size(el,1)-1][mulind[el]...]
+            @inbounds prod*= cum[size(el,1)][mulind[el]...]
         end
         sum += prod
     end
@@ -95,7 +86,7 @@ end
 Returns Array{Float, m}, the mixed array (sum of products of lower cumulants)
 """
 function mixedarr{T<:AbstractFloat}(cumulants::Vector{Array{T}}, m::Int)
-    n = size(cumulants[1], 2)
+    n = size(cumulants[1], 1)
     sumofprod = zeros(fill(n, m)...)
     parts = part(m)
     for ind in indices(m, n)
@@ -128,12 +119,17 @@ julia> pyramidcumulants(M, 3)[2]
  0.0  0.0
 ```
 """
-function pyramidcumulants{T<:AbstractFloat}(X::Matrix{T}, m::Int)
+function pyramidcumulants{T<:AbstractFloat}(X::Matrix{T}, m::Int = 4)
+    cumulants = Array{T}[]
+    push!(cumulants, pyramidmoment(X, 1))
     X = X .- mean(X, 1)
-    cumulants = [Base.covm(X, 0, 1, false), pyramidmoment(X, 3)]
-    for i in 4:m
-      cumulant = pyramidmoment(X, i) - mixedarr(cumulants, i)
-      push!(cumulants, cumulant)
+    for i in 2:m
+      if i < 4
+        push!(cumulants, pyramidmoment(X, i))
+      else
+        cumulant = pyramidmoment(X, i) - mixedarr(cumulants, i)
+        push!(cumulants, cumulant)
+      end
     end
     cumulants
 end
