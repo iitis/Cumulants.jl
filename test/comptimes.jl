@@ -1,11 +1,8 @@
 #!/usr/bin/env julia
 
 using Cumulants
-using Distributions
 using JLD
 using ArgParse
-import SymmetricTensors: indices
-import Cumulants: rawmoment, mom2cums, moment
 
 
 """
