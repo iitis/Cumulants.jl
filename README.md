@@ -1,5 +1,6 @@
 # Cumulants.jl
 [![Build Status](https://travis-ci.org/ZKSI/Cumulants.jl.svg?branch=master)](https://travis-ci.org/ZKSI/Cumulants.jl)
+[![Coverage Status](https://coveralls.io/repos/github/ZKSI/Cumulants.jl/badge.svg?branch=master)](https://coveralls.io/github/ZKSI/Cumulants.jl?branch=master)
 
 Calculates Cummulant tensors of any order for multivariate data.
 Functions return tensor or array of tensors in `SymmetricTensors` type. Requires [SymmetricTensors.jl](https://github.com/ZKSI/SymmetricTensors.jl). To convert to array, run:
