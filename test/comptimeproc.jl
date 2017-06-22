@@ -16,36 +16,30 @@ end
 
 function comptimesonprocs(t::Int, n::Int, m::Int, p::Int)
   data = randn(t, n)
-  time = Float64[]
-  prc = Float64[]
+  times = zeros(p)
   for i in 1:p
-    rmprocs(procs()[2:end])
-    addprocs(i-1)
-    println(nprocs())
+    addprocs(i)
+    println(nworkers())
     @everywhere using Cumulants
-    push!(time, comptime(data, moment, m, 3))
-    push!(prc, 1.*nprocs())
+    times[i] = comptime(data, moment, m, 3)
+    rmprocs(workers())
   end
-  time, prc
+  times
 end
 
 
 function savect(t::Int, n::Int, m::Int, maxprocs::Int)
   comptimes = zeros(maxprocs)
-  prcs = zeros(Int, maxprocs)
-  comptimes, prcs = comptimesonprocs(t,n,m,maxprocs)
-  onec = copy(comptimes)
-  for i in 2:maxprocs
-    onec[i] = onec[1]
-  end
-  filename = replace("res2/"*string(m)*"_"*string(t)*"_"*string(n)*"_nprocs.jld", "[", "")
+  comptimes = comptimesonprocs(t,n,m,maxprocs)
+  onec = fill(comptimes[1], maxprocs)
+  filename = replace("res2/$(m)_$(t)_$(n)_nprocs.jld", "[", "")
   filename = replace(filename, "]", "")
   compt = Dict{String, Any}("cumulants1c"=> onec, "cumulantsnc"=> comptimes)
   push!(compt, "t" => [t])
   push!(compt, "n" => n)
   push!(compt, "m" => m)
   push!(compt, "x" => "procs")
-  push!(compt, "procs" => prcs)
+  push!(compt, "procs" => collect(1:maxprocs))
   push!(compt, "functions" => [["cumulants1c", "cumulantsnc"]])
   save(filename, compt)
 end
