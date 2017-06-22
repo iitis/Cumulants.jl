@@ -1,12 +1,9 @@
 #!/usr/bin/env julia
 
 using Cumulants
-using PyCall
-@pyimport matplotlib as mpl
-mpl.use("Agg")
-using PyPlot
-mpl.rc("text", usetex=true)
-mpl.rc("font", family="serif", size = 12)
+using JLD
+using ArgParse
+
 
 
 function comptime(data::Matrix{Float64}, ccalc::Function, m::Int, b::Int)
@@ -17,7 +14,7 @@ function comptime(data::Matrix{Float64}, ccalc::Function, m::Int, b::Int)
 end
 
 
-function comptimesonprocs(t::Int, n::Int, m::Int, p::Int = 12)
+function comptimesonprocs(t::Int, n::Int, m::Int, p::Int)
   data = randn(t, n)
   time = Float64[]
   prc = Float64[]
@@ -33,21 +30,54 @@ function comptimesonprocs(t::Int, n::Int, m::Int, p::Int = 12)
 end
 
 
-
-function plot(t::Int, n::Int, m::Int)
-  a, c = comptimesonprocs(t,n,m)
-  b = a[1]./a[1:end]
-  fig, ax = subplots(figsize = (4.6, 4.6))
-  ax[:plot](c, b, "--x", label= "m = $m, t = $t, n = $n")
-  ax[:set_ylabel]("speedup of computional time")
-  ax[:set_xlabel]("core numbers")
-  ax[:legend](fontsize = 12, loc = 4, ncol = 1)
-  fig[:savefig]("test$n$t.eps")
+function savect(t::Int, n::Int, m::Int, maxprocs::Int)
+  comptimes = zeros(maxprocs)
+  prcs = zeros(Int, maxprocs)
+  comptimes, prcs = comptimesonprocs(t,n,m,maxprocs)
+  onec = copy(comptimes)
+  for i in 2:maxprocs
+    onec[i] = onec[1]
+  end
+  filename = replace("res2/"*string(m)*"_"*string(t)*"_"*string(n)*"_nprocs.jld", "[", "")
+  filename = replace(filename, "]", "")
+  compt = Dict{String, Any}("cumulants1c"=> onec, "cumulantsnc"=> comptimes)
+  push!(compt, "t" => [t])
+  push!(compt, "n" => n)
+  push!(compt, "m" => m)
+  push!(compt, "x" => "procs")
+  push!(compt, "procs" => prcs)
+  push!(compt, "functions" => [["cumulants1c", "cumulantsnc"]])
+  save(filename, compt)
 end
 
 
-function main()
-  plot(100000, 52, 4)
+function main(args)
+  s = ArgParseSettings("description")
+  @add_arg_table s begin
+      "--order", "-m"
+        help = "m, the order of cumulant, ndims of cumulant's tensor"
+        default = 4
+        arg_type = Int
+      "--nvar", "-n"
+        default = 40
+        help = "n, numbers of marginal variables"
+        arg_type = Int
+      "--dats", "-t"
+        help = "t, numbers of data records"
+        #nargs = '*'
+        default = 100000
+        arg_type = Int
+      "--maxprocs", "-p"
+        help = "maximal number of procs"
+        default = 4
+        arg_type = Int
+    end
+  parsed_args = parse_args(s)
+  m = parsed_args["order"]
+  n = parsed_args["nvar"]
+  t = parsed_args["dats"]
+  p = parsed_args["maxprocs"]
+  savect(t::Int, n::Int, m::Int, p::Int)
 end
 
-main()
+main(ARGS)

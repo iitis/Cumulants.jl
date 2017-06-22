@@ -34,6 +34,7 @@ end
   pltspeedup(comptimes::Array{Float}, m::Int, n::Vector{Int}, T::Vector{Int}, label::String)
 
 Returns a figure in .eps format of the computional speedup of cumulants function
+
 """
 
 function pltspeedup(filename::String)
@@ -43,4 +44,4 @@ function pltspeedup(filename::String)
   end
 end
 
-pltspeedup("4_50000,100000_20,30,40")
+pltspeedup("4_100000_40_nprocs")
