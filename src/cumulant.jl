@@ -121,7 +121,7 @@ is a block size. Calls 1 core or multicore moment function.
 """
 
 moment{T <: AbstractFloat}(X::Matrix{T}, m::Int, b::Int=2) =
-  (length(workers())>1)? momentnc(X, m, b):moment1c(X, m, b)
+  (nworkers()>1)? momentnc(X, m, b):moment1c(X, m, b)
 
 # ---- following code is used to caclulate cumulants in SymmetricTensor form----
 """
