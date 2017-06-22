@@ -1,26 +1,25 @@
 """
-  outer(a::Vector{Float}, b::Vector{Float})
+  outer!(z::Vector{Float}, a::Vector{Float}, b::Vector{Float})
 
-Return Vector{Float} , vectorsed outer/kroneker product o vectors a and b
+Return z - Vector{Float} , vectorsed outer/kroneker product o vectors a and b
 Auxiliary function for rawmoment
 """
-function outer{T <: AbstractFloat}(a::Vector{T}, b::Vector{T})
+function outer!{T <: AbstractFloat}(z::Vector{T}, a::Vector{T}, b::Vector{T})
     sa = size(a,1)
     sb = size(b,1)
-    R = Vector{T}(sa*sb)
     m = 1
-    for i = 1:sb, j = 1:sa
-        @inbounds R[m] = a[j]*b[i]
+    for i = 1:sb for j = 1:sa
+        @inbounds z[m] = a[j]*b[i]
         m += 1
     end
-    return R
+    end
 end
 
 """
   updvec!(A::Vector{Float}, B::Vector{Float})
 
 Returns updated Vector{Float} A, by adding elementwisely Vector{Float} B
-Auxiliary function for rawmoment 
+Auxiliary function for rawmoment
 """
 function updvec!{T<: AbstractFloat}(A::Vector{T}, B::Vector{T})
   n = size(A, 1)
@@ -44,14 +43,15 @@ function rawmoment{T <: AbstractFloat}(X::Matrix{T}, m::Int = 4)
   if m == 1
     return mean(X, 1)[1,:]
   else
+    z = [map(i -> zeros(T, n^i), 1:m)...]
     y = zeros(T, n^m)
-    z = T[1.]
     for i in 1:t
-      for j in 1:m
-        z = outer(X[i, :], z)
+      xi = X[i, :]
+      z[1] = xi
+      for j in 2:m
+        outer!(z[j], xi, z[j-1])
       end
-      updvec!(y, z)
-      z = T[1.]
+      updvec!(y, z[m])
     end
   end
   reshape(y/t, fill(n, m)...)
@@ -120,18 +120,6 @@ function onecumulant{T <: AbstractFloat}(ind::Tuple, raw::Vector{Array{T}},
   ret
 end
 
-
-function onecumulant11{T <: AbstractFloat}(ind::Tuple, raw::Vector{Array{T}},
-  spp::Vector, sppl::Vector{Vector{Int}}, dpp::Vector{Int})
-  ret = zero(T)
-  for i in 1:length(spp)
-    part = spp[i]
-    beln = length(part)
-    k = sppl[i]
-    ret += dpp[beln]*mapreduce(i->raw[k[i]][ind[part[i]]...], *, 1:beln)
-  end
-  ret
-end
 
 """
   cumulatsfrommoments(x::Matrix{Float}, k::Int)

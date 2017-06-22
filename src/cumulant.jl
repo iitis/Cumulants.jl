@@ -76,7 +76,7 @@ function usebl(bind::Tuple, n::Int, b::Int, nbar::Int)
 end
 
 """
-    momentn1(X::Matrix}, m::Int, b::Int)
+    momentn1c(X::Matrix{Float}, m::Int, b::Int)
 
 Returns: SymmetricTensor{Float, m}, a tensor of the m'th moment of X, where b
 is a block size. Uses 1 core implementation
@@ -121,7 +121,7 @@ is a block size. Calls 1 core or multicore moment function.
 """
 
 moment{T <: AbstractFloat}(X::Matrix{T}, m::Int, b::Int=2) =
-  (length(workers())>1)? momentnc(X, m, b):moment1c(X, m, b)
+  (nworkers()>1)? momentnc(X, m, b):moment1c(X, m, b)
 
 # ---- following code is used to caclulate cumulants in SymmetricTensor form----
 """

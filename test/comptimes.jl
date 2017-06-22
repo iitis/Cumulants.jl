@@ -1,11 +1,8 @@
 #!/usr/bin/env julia
 
 using Cumulants
-using Distributions
 using JLD
 using ArgParse
-import SymmetricTensors: indices
-import Cumulants: rawmoment, mom2cums, moment
 
 
 """
@@ -45,17 +42,17 @@ end
 Save a file in jld format of the computional times of moment, naivemoment, rawmoment
 
 """
-function savecomptime(m::Int, t::Vector{Int}, n::Vector{Int}, cache::Bool)
+function savecomptime(m::Int, t::Vector{Int}, n::Vector{Int})
   filename = replace("res2/"*string(m)*string(t)*string(n)*".jld", "[", "_")
   filename = replace(filename, "]", "")
-  if !(isfile(filename) & cache)
-    fs = [moment, naivemoment, rawmoment, cumulants, mom2cums, naivecumulant]
-    compt = Dict{String, Any}("$f"[11:end] => comtimes(m, t, n, f) for f in fs)
-    push!(compt, "t" => t)
-    push!(compt, "n" => n)
-    push!(compt, "m" => m)
-    save(filename, compt)
-  end
+  fs = [moment, naivemoment, cumulants, naivecumulant]
+  compt = Dict{String, Any}("$f"[11:end] => comtimes(m, t, n, f) for f in fs)
+  push!(compt, "t" => t)
+  push!(compt, "n" => n)
+  push!(compt, "m" => m)
+  push!(compt, "x" => "n")
+  push!(compt, "functions" => [["naivemoment", "moment"], ["naivecumulant", "cumulants"]])
+  save(filename, compt)
 end
 
 """
@@ -81,18 +78,12 @@ function main(args)
         nargs = '*'
         default = [4000]
         arg_type = Int
-      "--cache", "-c"
-        help = "indicates if computional times should be saved in a file or read
-          from a file"
-        default = true
-        arg_type = Bool
     end
   parsed_args = parse_args(s)
   m = parsed_args["order"]
   n = parsed_args["nvar"]
   t = parsed_args["dats"]
-  cache = parsed_args["cache"]
-  savecomptime(m, t, n, cache)
+  savecomptime(m, t, n)
 end
 
 main(ARGS)
