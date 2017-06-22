@@ -4,6 +4,30 @@ mpl.use("Agg")
 using PyPlot
 using JLD
 
+function singleplot(filename::String, name::String, compare::String = "")
+    d = load("res2/$filename"*".jld")
+  if compare == ""
+    comptimes = d[name]
+    ylab = "computional time [s]"
+  else
+    comptimes = d[name]./d[compare]
+    ylab = "speedup"
+  end
+  x = d["x"]
+  t = d["t"]
+  m = d["m"]
+  mpl.rc("text", usetex=true)
+  mpl.rc("font", family="serif", size = 8)
+  fig, ax = subplots(figsize = (3, 2.3))
+  for i in 1:size(comptimes, 2)
+    tt = t[i]
+    ax[:plot](d[x], comptimes[:,i], "--x", label= "t = $tt")
+  end
+  PyPlot.ylabel(ylab, labelpad = -1)
+  PyPlot.xlabel(x, labelpad = -3)
+  ax[:legend](fontsize = 7, loc = 2, ncol = 1)
+  fig[:savefig]("res2/"*name*filename*".eps")
+end
 
 
 """
@@ -13,31 +37,10 @@ Returns a figure in .eps format of the computional speedup of cumulants function
 """
 
 function pltspeedup(filename::String)
-  d = load("res2/$filename")
-  singleplot(d, "naivemoment", "moment")
-  singleplot(d, "rawmoment", "moment")
-  singleplot(d, "naivecumulant", "cumulants")
-  singleplot(d, "mom2cums", "cumulants")
-end
-
-function singleplot(d::Dict, name::String, compare::String)
-  comptimes = d[name]./d[compare]
-  t = d["t"]
-  n = d["n"]
-  m = d["m"]
-  mpl.rc("text", usetex=true)
-  mpl.rc("font", family="serif", size = 8)
-  fig, ax = subplots(figsize = (3, 2.3))
-  for i in 1:size(comptimes, 2)
-    tt = t[i]
-    ax[:plot](n, comptimes[:,i], "--x", label= "m = $m, t = $tt")
+  d = load("res2/$filename"*".jld")
+  for f in d["functions"]
+    singleplot(filename::String, f...)
   end
-  PyPlot.ylabel("speedup of computional time", labelpad = -1)
-  PyPlot.xlabel("m", labelpad = -3)
-  ax[:legend](fontsize = 8, loc = 2, ncol = 1)
-  name = replace("$name$m$t$n", "[", "_")
-  name = replace(name, "]", "")
-  fig[:savefig]("res2/"*name*".eps")
 end
 
-pltspeedup("4_50000_30.jld")
+pltspeedup("4_50000,100000_20,30,40")

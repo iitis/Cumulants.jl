@@ -8,6 +8,7 @@ using PyPlot
 mpl.rc("text", usetex=true)
 mpl.rc("font", family="serif", size = 12)
 
+
 function comptime(data::Matrix{Float64}, ccalc::Function, m::Int, b::Int)
   ccalc(data[1:4, 1:4], m, b)
   t = time_ns()
