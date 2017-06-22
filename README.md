@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/ZKSI/Cumulants.jl.svg?branch=master)](https://travis-ci.org/ZKSI/Cumulants.jl)
 [![Coverage Status](https://coveralls.io/repos/github/ZKSI/Cumulants.jl/badge.svg?branch=master)](https://coveralls.io/github/ZKSI/Cumulants.jl?branch=master)
 
-Calculates Cummulant tensors of any order for multivariate data.
+Calculates cummulant tensors of any order for multivariate data.
 Functions return tensor or array of tensors in `SymmetricTensors` type. Requires [SymmetricTensors.jl](https://github.com/ZKSI/SymmetricTensors.jl). To convert to array, run:
 
 ```julia
@@ -16,7 +16,7 @@ As of 01/01/2017 [kdomino](https://github.com/kdomino) is the lead maintainer of
 Within Julia, run
 
 ```julia
-julia> Pkg.clone("Cumulants")
+julia> Pkg.add("Cumulants")
 ```
 
 to install the files.  Julia 0.5 is required.
@@ -46,12 +46,12 @@ julia> data = reshape(collect(1.:15.),(5,3))
 julia> m = moment(data, 3)
 SymmetricTensors.SymmetricTensor{Float64,3}(Nullable{Array{Float64,3}}[[45.0 100.0; 100.0 230.0]
 
-[100.0 230.0; 230.0 560.0] #NULL; #NULL #NULL]
+[100.0 230.0; 230.0 560.0] NULL; NULL NULL]
 
-Nullable{Array{Float64,3}}[[155.0 360.0; 360.0 890.0] [565.0; 1420.0]; #NULL [2275.0]],2,2,3,false)
+Nullable{Array{Float64,3}}[[155.0 360.0; 360.0 890.0] [565.0; 1420.0]; NULL [2275.0]], 2, 2, 3, false)
 
 ```
-To convert to array just run convert
+To convert to array use `convert`
 
 ```julia
 julia> convert(Array, m)
@@ -88,14 +88,14 @@ that determines a size of blocks in `SymmetricTensors` type.
 julia> c = cumulants(data, 3);
 
 julia> c[2]
-SymmetricTensors.SymmetricTensor{Float64,2}(Nullable{Array{Float64,2}}[[2.0 2.0; 2.0 2.0] [2.0; 2.0]; #NULL [2.0]],2,2,3,false)
+SymmetricTensors.SymmetricTensor{Float64,2}(Nullable{Array{Float64,2}}[[2.0 2.0; 2.0 2.0] [2.0; 2.0]; NULL [2.0]], 2, 2, 3, false)
 
 julia> c[3]
 SymmetricTensors.SymmetricTensor{Float64,3}(Nullable{Array{Float64,3}}[[0.0 0.0; 0.0 0.0]
 
-[0.0 0.0; 0.0 0.0] #NULL; #NULL #NULL]
+[0.0 0.0; 0.0 0.0] NULL; NULL NULL]
 
-Nullable{Array{Float64,3}}[[0.0 0.0; 0.0 0.0] [0.0; 0.0]; #NULL [0.0]],2,2,3,false)
+Nullable{Array{Float64,3}}[[0.0 0.0; 0.0 0.0] [0.0; 0.0]; NULL [0.0]], 2, 2, 3, false)
 ```
 To convert to array given element of the vector `c`, just run:
 
