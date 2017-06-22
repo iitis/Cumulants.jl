@@ -76,7 +76,7 @@ function usebl(bind::Tuple, n::Int, b::Int, nbar::Int)
 end
 
 """
-    momentn1(X::Matrix}, m::Int, b::Int)
+    momentn1c(X::Matrix{Float}, m::Int, b::Int)
 
 Returns: SymmetricTensor{Float, m}, a tensor of the m'th moment of X, where b
 is a block size. Uses 1 core implementation
