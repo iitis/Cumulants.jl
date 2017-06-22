@@ -1,24 +1,25 @@
 # Cumulants.jl
 [![Build Status](https://travis-ci.org/ZKSI/Cumulants.jl.svg?branch=master)](https://travis-ci.org/ZKSI/Cumulants.jl)
+[![Coverage Status](https://coveralls.io/repos/github/ZKSI/Cumulants.jl/badge.svg?branch=master)](https://coveralls.io/github/ZKSI/Cumulants.jl?branch=master)
 
 Calculates Cummulant tensors of any order for multivariate data.
-Functions return tensor or array of tensors in `SymmetricTensors` type. Raquires SymmetricTensors.jl "https://github.com/kdomino/SymmetricTensors.jl". To convert to array, run:
+Functions return tensor or array of tensors in `SymmetricTensors` type. Requires [SymmetricTensors.jl](https://github.com/ZKSI/SymmetricTensors.jl). To convert to array, run:
 
 ```julia
 julia> convert(Array, data::SymmetricTensors{T, N})
 ```
 
-As of 01/01/2017 "https://github.com/kdomino" is the lead maintainer of this package.
+As of 01/01/2017 [kdomino](https://github.com/kdomino) is the lead maintainer of this package.
 
 ## Instalation
 
-Within Julia, just use run
+Within Julia, run
 
 ```julia
-julia> Pkg.clone("https://github.com/kdomino/Cumulants.jl")
+julia> Pkg.clone("Cumulants")
 ```
 
-to install the files.  Julia 0.5 or later required.
+to install the files.  Julia 0.5 is required.
 
 
 ## Functions
@@ -28,8 +29,8 @@ to install the files.  Julia 0.5 or later required.
 julia> moment{T <: AbstractFloat}(data::Matrix{T}, m::Int, b::Int = 2)
 ```
 
-Returns a `SymmetricTensor{T, m}` of the moment of order m of multivariate data represented by the matrix t x n, e.i. data whth n marginal variables and t realisations. The argument b with defalt value 2, is an optional Int that determines a size
-of blocks in `SymmetricTensors` type.
+Returns a `SymmetricTensor{T, m}` of the moment of order `m` of multivariate data represented by a `t` by `n` matrix, i.e. data with `n` marginal variables and `t` realisations. The argument `b` with defalt value `2`, is an optional `Int` that determines the size
+of the blocks in `SymmetricTensors` type.
 
 ```julia
 julia> data = reshape(collect(1.:15.),(5,3))
@@ -77,8 +78,11 @@ julia> convert(Array, m)
 julia> cumulants{T <: AbstractFloat}(data::Matrix{T}, m::Int = 4, b::Int = 2)
 ```
 
-Returns a vector of `SymmetricTensor{T, i}` i = 1,2,3,...,m of cumulants of order 1,2,3,...,m. Cumulants are calculated for multivariate data represented by the matrix of size t x n, e.i. data whth n marginal variables and t realisations.
-The argument b with defalt value 2, is an optional Int that determines a size of blocks in `SymmetricTensors` type.
+Returns a vector of `SymmetricTensor{T, i}` `i = 1,2,3,...,m` of cumulants of
+order `1,2,3,...,m`. Cumulants are calculated for multivariate data represented
+by matrix of size `t` by `n`, i.e. data with `n` marginal variables and `t`
+realisations. The argument `b` with default value `2`, is an optional `Int`
+that determines a size of blocks in `SymmetricTensors` type.
 
 ```julia
 julia> c = cumulants(data, 3);
@@ -93,7 +97,7 @@ SymmetricTensors.SymmetricTensor{Float64,3}(Nullable{Array{Float64,3}}[[0.0 0.0;
 
 Nullable{Array{Float64,3}}[[0.0 0.0; 0.0 0.0] [0.0; 0.0]; #NULL [0.0]],2,2,3,false)
 ```
-To convert to array given element ot the vector c, just run:
+To convert to array given element of the vector `c`, just run:
 
 ```julia
 julia> convert(Array, c[2])
@@ -120,10 +124,9 @@ julia> convert(Array, c[2])
  0.0  0.0  0.0
 ```
 
-Parallel computation available, it is efficient for large number of data realisations, e.g. t = 1000000. For parallel computation just run
+Parallel computation available, it is efficient for large number of data realisations, e.g. `t = 1000000`. For parallel computation just run
 ```julia
-julia> using Cumulants
-julia> addprocs()
+julia> addprocs(n)
 julia> @everywhere using Cumulants
 ```
 
@@ -155,9 +158,9 @@ julia> naivemoment(data, 3)
 ```
 
  ```julia
-julia> {T <: AbstractFloat}naivecumulant(data::Matrix{T}, m::Int)
+julia> naivecumulant{T <: AbstractFloat}(data::Matrix{T}, m::Int)
 ```
-Returns array{T, m} of the m'th cumulant of data, calculated using a naive algorithm.
+Returns `Array{T, m}` of the `m`'th cumulant of data, calculated using a naive algorithm.
 
 
 ```julia
@@ -188,10 +191,19 @@ julia> naivecumulant(data, 3)
  0.0  0.0  0.0
 ```
 
+# Performance analysis
 
 To analyse the computional time of our algorithm vs a naive algorithm and the algorithm introduced in 'MULTIVARIATE CUMULANTS IN R, 2012, JAN DE LEEUW' and implemented in Julia, we supply the executable script `comptimes.jl`.
 This script returns charts of the computional speedup of our algorithm vs other algorithms described above.
-It has optional arguments: -m (Int): cumulant's order, -n (vararg Int): numbers of marginal variables, -t (vararg Int): number of realistations
-of random variable, defalt valuse t = 4000, n = 22 24 and m = 4 are set. For good performance results use higher t and n, but the computional time of naice algorithm will be large. Be cautious while  using m>4, naive algorithm calculations may need a large time and there may be a memory shortage since the comparison algorithms does not use a block structure and stores in a computer mamory a whole cumulant array of size m^n. All comparisons performed by this script uses one core only.
+It has optional arguments:
+* `-m (Int)`: cumulant's order,
+* `-n (vararg Int)`: numbers of marginal variables,
+* `-t (vararg Int)`: number of realistations of random variable.
+The default values are `t = 4000`, `n = 22 24` and `m = 4`. For good performance results use higher `t` and `n`, but the computional time of naive algorithm will be large. Be cautious while  using `m`>`4`, as the naive algorithm calculations may need a large time and there may be a memory shortage since the comparison algorithms does not use a block structure and stores the whole array in memory. All comparisons performed by this script use only one core.
 
-The script `gandata.jl` executable from bash generate t = 75000000 realisations of n = 4 variate data form the t-multivariate distribution with \nu = 14 degrees of freedom. The script `testondata.jl` computes cumulant tensors of order m = 2,3,...,6 of those data and displays some of cumulants valuse on charts. For superdiagonal values the comparison with theoretical cumulants values of the distrubution is supplied.
+The script `gandata.jl` generates `t = 75000000` realisations of `n = 4` variate data form the `t`-multivariate distribution with `\nu = 14` degrees of freedom. The script `testondata.jl` computes cumulant tensors of order `m = 2,3,...,6` of those data and displays some of cumulants valuse on charts. For superdiagonal values the comparison with theoretical cumulants values of the distrubution is supplied.
+
+# Citing this work
+
+
+Krzysztof Domino, Piotr Gawron, Łukasz Pawela, *The tensor network representation of high order cumulant and algorithm for their calculation*, [arXiv:1701.05420](https://arxiv.org/abs/1701.05420)
