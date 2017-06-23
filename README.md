@@ -133,7 +133,7 @@ julia> @everywhere using Cumulants
 Naive algorithms of moment and cumulant tesors calculations are also available.
 
  ```julia
-julia> {T <: AbstractFloat}naivemoment(data::Matrix{T}, m::Int)
+julia> {T <: AbstractFloat}naivemoment(data::Matrix{T}, m::Int = 4)
 ```
 Returns array{T, m} of the m'th moment of data. calculated using a naive algorithm.
 
@@ -158,9 +158,9 @@ julia> naivemoment(data, 3)
 ```
 
  ```julia
-julia> naivecumulant{T <: AbstractFloat}(data::Matrix{T}, m::Int)
+julia> naivecumulant{T <: AbstractFloat}(data::Matrix{T}, m::Int = 4)
 ```
-Returns `Array{T, m}` of the `m`'th cumulant of data, calculated using a naive algorithm.
+Returns `Array{T, m}` of the `m`'th cumulant of data, calculated using a naive algorithm. Works for `1 <= m , 7`, for `m >= 7` throws exception.
 
 
 ```julia
@@ -193,13 +193,12 @@ julia> naivecumulant(data, 3)
 
 # Performance analysis
 
-To analyse the computional time of our algorithm vs a naive algorithm and the algorithm introduced in 'MULTIVARIATE CUMULANTS IN R, 2012, JAN DE LEEUW' and implemented in Julia, we supply the executable script `comptimes.jl`.
-This script returns charts of the computional speedup of our algorithm vs other algorithms described above.
-It has optional arguments:
-* `-m (Int)`: cumulant's order,
-* `-n (vararg Int)`: numbers of marginal variables,
-* `-t (vararg Int)`: number of realistations of random variable.
-The default values are `t = 4000`, `n = 22 24` and `m = 4`. For good performance results use higher `t` and `n`, but the computional time of naive algorithm will be large. Be cautious while  using `m`>`4`, as the naive algorithm calculations may need a large time and there may be a memory shortage since the comparison algorithms does not use a block structure and stores the whole array in memory. All comparisons performed by this script use only one core.
+To analyse the computional time of cumulants vs naivecumulants and moment vs naivemoment, we supply the executable script `comptimes.jl`.
+This script returns a file of comutional times and folowing data parameters:
+* `-m (Int)`: cumulant's order, by default `m = 4`,
+* `-n (vararg Int)`: numbers of marginal variables, by default `m = [22, 24]`,
+* `-t (vararg Int)`: number of realistations of random variable, by defalut `t = 4000`.
+Be carefull while using `n`>`4` and large `m`, where naive algorithms might need a large computional time and memory usage. Naive algorithms does not use the block structures, hence they computes and stores a whole cumulant tensor regardless its symmetry. All comparisons performed by this script use only one core.
 
 The script `gandata.jl` generates `t = 75000000` realisations of `n = 4` variate data form the `t`-multivariate distribution with `\nu = 14` degrees of freedom. The script `testondata.jl` computes cumulant tensors of order `m = 2,3,...,6` of those data and displays some of cumulants valuse on charts. For superdiagonal values the comparison with theoretical cumulants values of the distrubution is supplied.
 
