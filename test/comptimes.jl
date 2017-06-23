@@ -70,13 +70,13 @@ function main(args)
         arg_type = Int
       "--nvar", "-n"
         nargs = '*'
-        default = [22, 24]
+        default = [20, 24, 28]
         help = "n, numbers of marginal variables"
         arg_type = Int
       "--dats", "-t"
         help = "t, numbers of data records"
         nargs = '*'
-        default = [4000]
+        default = [10000]
         arg_type = Int
     end
   parsed_args = parse_args(s)

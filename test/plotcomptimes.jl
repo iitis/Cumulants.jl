@@ -44,4 +44,4 @@ function pltspeedup(filename::String)
   end
 end
 
-pltspeedup("4_10000,15000_50_nblocks")
+pltspeedup("4_10000_20,24_28")

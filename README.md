@@ -196,9 +196,9 @@ julia> naivecumulant(data, 3)
 To analyse the computional time of cumulants vs naivecumulants and moment vs naivemoment, we supply the executable script `comptimes.jl`.
 This script returns a file of comutional times and folowing data parameters:
 * `-m (Int)`: cumulant's order, by default `m = 4`,
-* `-n (vararg Int)`: numbers of marginal variables, by default `m = [22, 24]`,
-* `-t (vararg Int)`: number of realistations of random variable, by defalut `t = 4000`.
-Be carefull while using `n`>`4` and large `m`, where naive algorithms might need a large computional time and memory usage. Naive algorithms does not use the block structures, hence they computes and stores a whole cumulant tensor regardless its symmetry. All comparisons performed by this script use only one core.
+* `-n (vararg Int)`: numbers of marginal variables, by default `m = [20, 24, 28]`,
+* `-t (vararg Int)`: number of realistations of random variable, by defalut `t = 10000`.
+Be carefull while using `n`>`4` and large `m`, where naive algorithms might need a large computional time and memory usage. Naive algorithms does not use the block structures, hence they computes and stores a whole cumulant tensor regardless its symmetry. All comparisons performed by this script use one core.
 
 The script `gandata.jl` generates `t = 75000000` realisations of `n = 4` variate data form the `t`-multivariate distribution with `\nu = 14` degrees of freedom. The script `testondata.jl` computes cumulant tensors of order `m = 2,3,...,6` of those data and displays some of cumulants valuse on charts. For superdiagonal values the comparison with theoretical cumulants values of the distrubution is supplied.
 
