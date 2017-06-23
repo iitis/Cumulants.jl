@@ -32,15 +32,15 @@ function savect(t::Int, n::Int, m::Int, maxprocs::Int)
   comptimes = zeros(maxprocs)
   comptimes = comptimesonprocs(t,n,m,maxprocs)
   onec = fill(comptimes[1], maxprocs)
-  filename = replace("res2/$(m)_$(t)_$(n)_nprocs.jld", "[", "")
+  filename = replace("res/$(m)_$(t)_$(n)_nprocs.jld", "[", "")
   filename = replace(filename, "]", "")
-  compt = Dict{String, Any}("cumulants1c"=> onec, "cumulantsnc"=> comptimes)
+  compt = Dict{String, Any}("cumulants"=> onec, "cumulantsnc"=> comptimes)
   push!(compt, "t" => [t])
   push!(compt, "n" => n)
   push!(compt, "m" => m)
   push!(compt, "x" => "procs")
   push!(compt, "procs" => collect(1:maxprocs))
-  push!(compt, "functions" => [["cumulants1c", "cumulantsnc"]])
+  push!(compt, "functions" => [["cumulants", "cumulantsnc"]])
   save(filename, compt)
 end
 
@@ -53,7 +53,7 @@ function main(args)
         default = 4
         arg_type = Int
       "--nvar", "-n"
-        default = 40
+        default = 50
         help = "n, numbers of marginal variables"
         arg_type = Int
       "--dats", "-t"

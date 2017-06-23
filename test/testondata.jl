@@ -50,7 +50,7 @@ function pltdiag(l::Vector{String}, codd::Vector{Float64}, cev::Vector{Float64})
   ax[:set_ylabel]("superdiagonal element")
   ax[:set_xlabel]("superdiagonal element number")
   ax[:legend](fontsize = 12, loc = 5)
-  fig[:savefig]("res2/diagcumel"*l[2][2:end]*".eps")
+  fig[:savefig]("res/diagcumel"*l[2][2:end]*".eps")
 end
 
 """
@@ -66,7 +66,7 @@ function pltall(l::Vector{String}, v::Vector{Float64}, v1::Vector{Float64})
   ax[:set_ylabel]("cumulant's element")
   ax[:set_xlabel]("element's number of vectorised cumulat")
   ax[:legend](fontsize = 12, loc = 4)
-  fig[:savefig]("res2/allcumels"*l[2][2:end]*".eps")
+  fig[:savefig]("res/allcumels"*l[2][2:end]*".eps")
 end
 
 """

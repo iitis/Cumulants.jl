@@ -43,7 +43,7 @@ Save a file in jld format of the computional times of moment, naivemoment, rawmo
 
 """
 function savecomptime(m::Int, t::Vector{Int}, n::Vector{Int})
-  filename = replace("res2/"*string(m)*string(t)*string(n)*".jld", "[", "_")
+  filename = replace("res/"*string(m)*string(t)*string(n)*".jld", "[", "_")
   filename = replace(filename, "]", "")
   fs = [moment, naivemoment, cumulants, naivecumulant]
   compt = Dict{String, Any}("$f"[11:end] => comtimes(m, t, n, f) for f in fs)

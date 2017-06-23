@@ -1,11 +1,14 @@
+#!/usr/bin/env julia
+
 using PyCall
 @pyimport matplotlib as mpl
 mpl.use("Agg")
 using PyPlot
 using JLD
+using ArgParse
 
 function singleplot(filename::String, name::String, compare::String = "")
-    d = load("res2/$filename"*".jld")
+    d = load(filename*".jld")
   if compare == ""
     comptimes = d[name]
     ylab = "computional time [s]"
@@ -26,7 +29,7 @@ function singleplot(filename::String, name::String, compare::String = "")
   PyPlot.ylabel(ylab, labelpad = -1)
   PyPlot.xlabel(x, labelpad = -3)
   ax[:legend](fontsize = 7, loc = 2, ncol = 1)
-  fig[:savefig]("res2/"*name*filename*".eps")
+  fig[:savefig](name*filename*".eps")
 end
 
 
@@ -38,10 +41,22 @@ Returns a figure in .eps format of the computional speedup of cumulants function
 """
 
 function pltspeedup(filename::String)
-  d = load("res2/$filename"*".jld")
+  d = load(filename*".jld")
   for f in d["functions"]
     singleplot(filename::String, f...)
   end
 end
 
-pltspeedup("4_10000_20,24_28")
+
+function main(args)
+  s = ArgParseSettings("description")
+  @add_arg_table s begin
+    "--file", "-f"
+    help = "the file name without .jld extension"
+    arg_type = String
+  end
+  parsed_args = parse_args(s)
+  pltspeedup(parsed_args["file"])
+end
+
+main(ARGS)

@@ -5,7 +5,6 @@ using JLD
 using ArgParse
 
 
-
 function comptime(data::Matrix{Float64}, ccalc::Function, m::Int, b::Int)
   ccalc(data[1:4, 1:4], m, 2)
   t = time_ns()
@@ -23,7 +22,7 @@ function savect(t::Vector{Int}, n::Int, m::Int)
       comptimes[i-1, k] = comptime(data, cumulants, m, i)
     end
   end
-  filename = replace("res2/$(m)_$(t)_$(n)_nblocks.jld", "[", "")
+  filename = replace("res/$(m)_$(t)_$(n)_nblocks.jld", "[", "")
   filename = replace(filename, "]", "")
   compt = Dict{String, Any}("cumulants"=> comptimes)
   push!(compt, "t" => t)
