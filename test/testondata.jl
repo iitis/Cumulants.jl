@@ -2,7 +2,7 @@
 
 using JLD
 using Cumulants
-addprocs()
+addprocs(4)
 @everywhere using Cumulants
 
 function main()
@@ -12,7 +12,7 @@ function main()
     return ()
   end
   c = cumulants(d["data"], 6)
-  save("data/cumulants.jld", Dict("cumulant" => c))
+  save("data/cumulants.jld", Dict("cumulants" => c))
 end
 
 main()

@@ -10,7 +10,7 @@ Returns Matrix{Float64} - t realisations from t-student multivatiate distributio
 with nu degress of freedom
 """
 
-function gendat(nu::Int, t::Int = 100000000)
+function gendat(nu::Int, t::Int = 150000000)
   cm = [[1. 0.7 0.7 0.7];[0.7 1. 0.7 0.7]; [0.7 0.7 1. 0.7]; [0.7 0.7 0.7 1]]
   p = MvTDist(nu, [0., 0., 0., 0.],cm)
   return transpose(rand(p, t))
