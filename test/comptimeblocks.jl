@@ -50,7 +50,7 @@ function main(args)
       "--dats", "-t"
         help = "t, numbers of data records"
         nargs = '*'
-        default = [10000, 15000]
+        default = [10000, 20000]
         arg_type = Int
     end
   parsed_args = parse_args(s)
