@@ -11,26 +11,6 @@ using PyPlot
 mpl.rc("text", usetex=true)
 mpl.rc("font", family="serif", size = 12)
 
-"""
-  tmom(nu::Int, k::Int)
-
-Returns Float64, the k'th moment of standard t distribution with nu degreed of
-freedom
-"""
-tmom(nu::Int, k::Int) = gamma((k+1)/2)*gamma((nu-k)/2)*nu^(k/2)/(sqrt(pi)*gamma(nu/2))
-"""
-  tcum(nu::Int, k::Int)
-
-Returns Float64, the k'th cumulant of standard t distribution with nu degreed of
-freedom
-"""
-function tcum(nu::Int, k::Int)
-  if k == 4
-    return tmom(nu, 4) - 3*tmom(nu, 2)^2
-  elseif k == 6
-    return tmom(nu, 6) - 15*tmom(nu, 4)*tmom(nu, 2) + 30*tmom(nu, 2)^3
-  end
-end
 
 """
   pltdiag(l::Vector{String}, codd::Vector{Float64}, cev::Vector{Float64})

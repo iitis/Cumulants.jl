@@ -217,7 +217,11 @@ This script returns to a .jld file computional times, given folowing parameters:
 All result files are saved in /res directory. To plot a graph run /res/plotcomptimes.jl, with parameter
 * `-f (String)`: file name without the .jld extension.
 
-The script `gandata.jl` generates `t = 75000000` realisations of `n = 4` dimensional data form the `t`-multivariate distribution with `\nu = 14` degrees of freedom. The script `testondata.jl` computes cumulant tensors of order `m = 2,3,...,6` of those data and displays some of cumulants valuse on charts. For superdiagonal values the comparison with theoretical cumulants values of the distrubution is supplied.
+For the computional example on data use the following.
+
+The script `gandata.jl` generates `t = 75000000` realisations of `n = 4` dimensional data form the `t`-multivariate distribution with `\nu = 14` degrees of freedom. 
+
+The script `testondata.jl` computes cumulant tensors of order `m = 1 - 6` for those data and displays some of cumulants valuse on charts. For superdiagonal values the comparison with theoretical cumulants values of the distrubution is supplied.
 
 # Citing this work
 
