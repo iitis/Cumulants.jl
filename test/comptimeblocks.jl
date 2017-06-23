@@ -43,7 +43,7 @@ function main(args)
         default = 4
         arg_type = Int
       "--nvar", "-n"
-        default = 50
+        default = 48
         help = "n, numbers of marginal variables"
         arg_type = Int
       "--dats", "-t"

@@ -203,7 +203,7 @@ Be carefull while using `n`>`4` and large `m`, where naive algorithms might need
 To analyse the computional time of cumulants for diferent block sizes `1 < b < sqrt(n)`, we supply the executable script `comptimes.jl`.
 This script returns to a .jld file computional times, given folowing parameters:
 * `-m (Int)`: cumulant's order, by default `m = 4`,
-* `-n (Int)`: numbers of marginal variables, by default `m = 50`,
+* `-n (Int)`: numbers of marginal variables, by default `m = 48`,
 * `-t (vararg Int)`: number of realistations of random variable, by defalut `t = 10000 20000`.
 Computional times and parameters are saved in the .jld file in /res directory. All comparisons performed by this script use one core.
 
