@@ -19,7 +19,7 @@ function comptimesonprocs(t::Int, n::Int, m::Int, p::Int)
   times = zeros(p)
   for i in 1:p
     addprocs(i)
-    println(nworkers())
+    println("number of workers = ", nworkers())
     @everywhere using Cumulants
     times[i] = comptime(data, moment, m, 3)
     rmprocs(workers())

@@ -41,7 +41,8 @@ Returns a figure in .eps format of the computional speedup of cumulants function
 """
 
 function pltspeedup(filename::String)
-  d = load(filename*".jld")
+  d = load(filename)
+  filename = replace(filename, ".jld", "")
   for f in d["functions"]
     singleplot(filename::String, f...)
   end
@@ -52,7 +53,7 @@ function main(args)
   s = ArgParseSettings("description")
   @add_arg_table s begin
     "--file", "-f"
-    help = "the file name without .jld extension"
+    help = "the file name"
     arg_type = String
   end
   parsed_args = parse_args(s)

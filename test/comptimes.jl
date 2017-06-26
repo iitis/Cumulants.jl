@@ -30,6 +30,8 @@ function comtimes(m::Int, t::Vector{Int}, n::Vector{Int}, f::Function)
   for i in 1:length(t)
     for j in 1:length(n)
       data = randn(t[i], n[j])
+      println("n = ", n[j])
+      println("t = ", t[i])
       compt[j,i] = comptime(data, f, m)
     end
   end
@@ -46,7 +48,12 @@ function savecomptime(m::Int, t::Vector{Int}, n::Vector{Int})
   filename = replace("res/"*string(m)*string(t)*string(n)*".jld", "[", "_")
   filename = replace(filename, "]", "")
   fs = [moment, naivemoment, cumulants, naivecumulant]
-  compt = Dict{String, Any}("$f"[11:end] => comtimes(m, t, n, f) for f in fs)
+  compt = Dict{String, Any}()
+  for f in fs
+    fname = "$f"[11:end]
+    println("called function " , fname)
+    push!(compt, fname => comtimes(m, t, n, f))
+  end
   push!(compt, "t" => t)
   push!(compt, "n" => n)
   push!(compt, "m" => m)
