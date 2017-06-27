@@ -212,7 +212,8 @@ This script returns to a .jld file computional times, given folowing parameters:
 * `-m (Int)`: cumulant's order, by default `m = 4`,
 * `-n (Int)`: numbers of marginal variables, by default `m = 50`,
 * `-t (Int)`: number of realistations of random variable, by defalut `t = 100000`,
-* `-p (Int)`: maximal number of proceses, by default `p = 4`.
+* `-p (Int)`: maximal number of proceses, by default `p = 4`,
+* `-b (Int)`: blocks size, by default `b = 2`.
 
 All result files are saved in /res directory. To plot a graph run /res/plotcomptimes.jl, with parameter
 * `-f (String)`: file name without the .jld extension.

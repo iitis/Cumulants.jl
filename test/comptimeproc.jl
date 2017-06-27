@@ -14,25 +14,25 @@ function comptime(data::Matrix{Float64}, ccalc::Function, m::Int, b::Int)
 end
 
 
-function comptimesonprocs(t::Int, n::Int, m::Int, p::Int)
+function comptimesonprocs(t::Int, n::Int, m::Int, p::Int, b::Int)
   data = randn(t, n)
   times = zeros(p)
   for i in 1:p
     addprocs(i)
     println("number of workers = ", nworkers())
     @everywhere using Cumulants
-    times[i] = comptime(data, moment, m, 3)
+    times[i] = comptime(data, moment, m, b)
     rmprocs(workers())
   end
   times
 end
 
 
-function savect(t::Int, n::Int, m::Int, maxprocs::Int)
+function savect(t::Int, n::Int, m::Int, maxprocs::Int, b::Int)
   comptimes = zeros(maxprocs)
-  comptimes = comptimesonprocs(t,n,m,maxprocs)
+  comptimes = comptimesonprocs(t,n,m,maxprocs, b)
   onec = fill(comptimes[1], maxprocs)
-  filename = replace("res/$(m)_$(t)_$(n)_nprocs.jld", "[", "")
+  filename = replace("res/$(m)_$(t)_$(n)_$(b)_nprocs.jld", "[", "")
   filename = replace(filename, "]", "")
   compt = Dict{String, Any}("cumulants"=> onec, "cumulantsnc"=> comptimes)
   push!(compt, "t" => [t])
@@ -65,13 +65,18 @@ function main(args)
         help = "maximal number of procs"
         default = 4
         arg_type = Int
+        "--blocksize", "-b"
+        help = "set a block size"
+        default = 2
+        arg_type = Int
     end
   parsed_args = parse_args(s)
   m = parsed_args["order"]
   n = parsed_args["nvar"]
   t = parsed_args["dats"]
   p = parsed_args["maxprocs"]
-  savect(t::Int, n::Int, m::Int, p::Int)
+  b = parsed_args["blocksize"]
+  savect(t::Int, n::Int, m::Int, p::Int, b::Int)
 end
 
 main(ARGS)
