@@ -215,8 +215,7 @@ This script returns to a .jld file computional times, given folowing parameters:
 * `-p (Int)`: maximal number of proceses, by default `p = 4`,
 * `-b (Int)`: blocks size, by default `b = 2`.
 
-All result files are saved in /res directory. To plot a graph run /res/plotcomptimes.jl, with parameter
-* `-f (String)`: file name without the .jld extension.
+All result files are saved in /res directory. To plot a graph run /res/plotcomptimes.jl followed by a `*.jld` file name
 
 For the computional example on data use the following.
 
