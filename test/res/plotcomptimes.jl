@@ -23,9 +23,10 @@ function singleplot(filename::String, name::String, compare::String = "")
   mpl.rc("font", family="serif", size = 7)
   fig, ax = subplots(figsize = (2.5, 2.))
   col = ["red", "blue", "black", "green", "yellow", "orange"]
+  marker = [":s", ":o", ":v", ":<", ":>", ":d"]
   for i in 1:size(comptimes, 2)
     tt = t[i]
-    ax[:plot](d[x], comptimes[:,i], ":s", label= "t = $tt", color = col[i], markersize=2.5, linewidth = 1)
+    ax[:plot](d[x], comptimes[:,i], marker[i], label= "t = $tt", color = col[i], markersize=2.5, linewidth = 1)
   end
   PyPlot.ylabel(ylab, labelpad = -1.8)
   PyPlot.xlabel(x, labelpad = -2)
