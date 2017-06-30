@@ -200,16 +200,16 @@ This script returns to a .jld file computional times, given folowing parameters:
 * `-t (vararg Int)`: number of realistations of random variable, by defalut `t = 10000`.
 Be carefull while using `n`>`4` and large `m`, where naive algorithms might need a large computional time and memory usage. Naive algorithms does not use the block structures, hence they computes and stores a whole cumulant tensor regardless its symmetry. All comparisons performed by this script use one core.
 
-To analyse the computional time of cumulants for diferent block sizes `1 < b < sqrt(n)`, we supply the executable script `comptimes.jl`.
+To analyse the computional time of cumulants for diferent block sizes `1 < b =< Int(sqrt(n))`, we supply the executable script `comptimes.jl`.
 This script returns to a .jld file computional times, given folowing parameters:
 * `-m (Int)`: cumulant's order, by default `m = 4`,
 * `-n (Int)`: numbers of marginal variables, by default `m = 48`,
 * `-t (vararg Int)`: number of realistations of random variable, by defalut `t = 10000 20000`.
 Computional times and parameters are saved in the .jld file in /res directory. All comparisons performed by this script use one core.
 
-To analyse the computional time of cumulants on different numbers of proseses, we supply the executable script `comptimeprocs.jl`.
+To analyse the computional time of moment on different numbers of proseses, we supply the executable script `comptimeprocs.jl`.
 This script returns to a .jld file computional times, given folowing parameters:
-* `-m (Int)`: cumulant's order, by default `m = 4`,
+* `-m (Int)`: moment's order, by default `m = 4`,
 * `-n (Int)`: numbers of marginal variables, by default `m = 50`,
 * `-t (Int)`: number of realistations of random variable, by defalut `t = 100000`,
 * `-p (Int)`: maximal number of proceses, by default `p = 4`,
