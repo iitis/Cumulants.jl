@@ -201,15 +201,16 @@ function accesscum{T <: AbstractFloat}(mulind::Tuple,
                                        part::IndexPart,
                                        cum::SymmetricTensor{T}...)
   blocks = Array(Array{T}, part.npart)
+  sq = cum[1].sqr || !(cum[1].bln in mulind)
   for k in 1:part.npart
-    data = cum[part.subsetslen[k]-0][mulind[part.part[k]]]
-    if cum[1].sqr || !(cum[1].bln in mulind)
-      blocks[k] = data
+    data = cum[part.subsetslen[k]][mulind[part.part[k]]]
+    if sq
+      @inbounds blocks[k] = data
     else
       ind = map(i -> 1:size(data,i), 1:part.subsetslen[k])
       datapadded = zeros(T, fill(cum[1].bls, part.subsetslen[k])...)
       @inbounds datapadded[ind...] = data
-      blocks[k] = datapadded
+      @inbounds blocks[k] = datapadded
     end
   end
   blocks
