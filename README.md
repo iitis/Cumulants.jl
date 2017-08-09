@@ -11,7 +11,7 @@ julia> convert(Array, data::SymmetricTensors{T, N})
 
 As of 01/01/2017 [kdomino](https://github.com/kdomino) is the lead maintainer of this package.
 
-## Instalation
+## Installation
 
 Within Julia, run
 
@@ -130,7 +130,7 @@ julia> addprocs(n)
 julia> @everywhere using Cumulants
 ```
 
-Naive algorithms of moment and cumulant tesors calculations are also available.
+Naive algorithms of moment and cumulant tensors calculations are also available.
 
  ```julia
 julia> {T <: AbstractFloat}naivemoment(data::Matrix{T}, m::Int = 4)
@@ -193,34 +193,34 @@ julia> naivecumulant(data, 3)
 
 # Performance analysis
 
-To analyse the computional time of cumulants vs naivecumulants and moment vs naivemoment, we supply the executable script `comptimes.jl`.
-This script returns to a .jld file computional times, given folowing parameters:
+To analyse the computational time of cumulants vs naivecumulants and moment vs naivemoment, we supply the executable script `comptimes.jl`.
+This script returns to a .jld file computational times, given following parameters:
 * `-m (Int)`: cumulant's order, by default `m = 4`,
 * `-n (vararg Int)`: numbers of marginal variables, by default `m = 20 24 28`,
-* `-t (vararg Int)`: number of realistations of random variable, by defalut `t = 10000`.
-Be carefull while using `n`>`4` and large `m`, where naive algorithms might need a large computional time and memory usage. Naive algorithms does not use the block structures, hence they computes and stores a whole cumulant tensor regardless its symmetry. All comparisons performed by this script use one core.
+* `-t (vararg Int)`: number of realisations of random variable, by defalut `t = 10000`.
+Be careful while using `n`>`4` and large `m`, where naive algorithms might need a large computational time and memory usage. Naive algorithms does not use the block structures, hence they computes and stores a whole cumulant tensor regardless its symmetry. All comparisons performed by this script use one core.
 
-To analyse the computional time of cumulants for diferent block sizes `1 < b =< Int(sqrt(n))`, we supply the executable script `comptimes.jl`.
-This script returns to a .jld file computional times, given folowing parameters:
+To analyse the computational time of cumulants for different block sizes `1 < b =< Int(sqrt(n))`, we supply the executable script `comptimeblocks.jl`.
+This script returns to a .jld file computational times, given following parameters:
 * `-m (Int)`: cumulant's order, by default `m = 4`,
 * `-n (Int)`: numbers of marginal variables, by default `m = 48`,
-* `-t (vararg Int)`: number of realistations of random variable, by defalut `t = 10000 20000`.
-Computional times and parameters are saved in the .jld file in /res directory. All comparisons performed by this script use one core.
+* `-t (vararg Int)`: number of realisations of random variable, by default `t = 10000 20000`.
+Computational times and parameters are saved in the .jld file in /res directory. All comparisons performed by this script use one core.
 
-To analyse the computional time of moment on different numbers of proseses, we supply the executable script `comptimeprocs.jl`.
-This script returns to a .jld file computional times, given folowing parameters:
+To analyse the computational time of moment on different numbers of processes, we supply the executable script `comptimeprocs.jl`.
+This script returns to a .jld file computational times, given following parameters:
 * `-m (Int)`: moment's order, by default `m = 4`,
 * `-n (Int)`: numbers of marginal variables, by default `m = 50`,
-* `-t (Int)`: number of realistations of random variable, by defalut `t = 100000`,
-* `-p (Int)`: maximal number of proceses, by default `p = 4`,
+* `-t (Int)`: number of realisations of random variable, by default `t = 100000`,
+* `-p (Int)`: maximal number of processes, by default `p = 4`,
 * `-b (Int)`: blocks size, by default `b = 2`.
 
 All result files are saved in /res directory. To plot a graph run /res/plotcomptimes.jl followed by a `*.jld` file name
 
-For the computional example on data use the following.
+For the computational example on data use the following.
 
 The script `gandata.jl` generates `t = 150000000` realisations of `n = 4` dimensional data form the `t`-multivariate distribution with `\nu = 14` degrees of freedom, and theoretical 
-super-diagonal elements of those cumulants. Rasults are saved in `data/datafortests.jld`
+super-diagonal elements of those cumulants. Results are saved in `data/datafortests.jld`
 
 The script `testondata.jl` computes cumulant tensors of order `m = 1 - 6` for `data/datafortests.jld`, results are saved in `data/cumulants.jld`.
 
@@ -235,7 +235,7 @@ julia> load("cumulants.jld")
 
 ```
 
-To plot super-diagonal elements of those cumulants and their theoretical values from t-student dostrobution pleas run `plotsuperdiag.jl`
+To plot super-diagonal elements of those cumulants and their theoretical values from t-student distribution pleas run `plotsuperdiag.jl`
 
 
 # Citing this work
