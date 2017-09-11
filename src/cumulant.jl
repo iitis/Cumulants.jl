@@ -203,7 +203,7 @@ function accesscum{T <: AbstractFloat}(mulind::Tuple,
   blocks = Array(Array{T}, part.npart)
   sq = cum[1].sqr || !(cum[1].bln in mulind)
   for k in 1:part.npart
-    data = cum[part.subsetslen[k]][mulind[part.part[k]]]
+    data = getblockunsafe(cum[part.subsetslen[k]], mulind[part.part[k]])
     if sq
       @inbounds blocks[k] = data
     else

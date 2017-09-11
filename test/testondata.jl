@@ -2,8 +2,6 @@
 
 using JLD
 using Cumulants
-addprocs(4)
-@everywhere using Cumulants
 
 function main()
   d = try load("data/datafortests.jld")
