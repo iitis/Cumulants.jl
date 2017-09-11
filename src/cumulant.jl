@@ -85,7 +85,7 @@ is a block size. Uses 1 core implementation
 function moment1c{T <: AbstractFloat}(X::Matrix{T}, m::Int, b::Int=2)
   n = size(X, 2)
   sizetest(n, b)
-  nbar = ceil(Int, n/b)
+  nbar = mod(n,b)==0 ? n÷b : n÷b + 1
   ret = NullableArray(Array{T, m}, fill(nbar, m)...)
   for j in indices(m, nbar)
     dims = (mod(n,b) == 0 || !(nbar in j))? (fill(b,m)...): usebl(j, n, b, nbar)
@@ -106,7 +106,7 @@ function momentnc{T <: AbstractFloat}(x::Matrix{T}, m::Int, b::Int = 2)
   t = size(x, 1)
   f(z::Matrix{T}) = moment1c(z, m, b)
   k = length(workers())
-  r = ceil(Int, t/k)
+  r = mod(t,k)==0 ? t÷k : t÷k + 1
   y = [x[ind2range(i, r, t), :] for i in 1:k]
   ret = pmap(f, y)
   (r*sum(ret[1:(end-1)])+(t-(k-1)*r)*ret[end])/t
@@ -200,7 +200,8 @@ Array{Float64,N}[
 function accesscum{T <: AbstractFloat}(mulind::Tuple,
                                        part::IndexPart,
                                        cum::SymmetricTensor{T}...)
-  blocks = Array(Array{T}, part.npart)
+  #blocks = Array(Array{T}, part.npart)
+  blocks = Array{Array{T}}(part.npart)
   sq = cum[1].sqr || !(cum[1].bln in mulind)
   for k in 1:part.npart
     data = getblockunsafe(cum[part.subsetslen[k]], mulind[part.part[k]])
@@ -318,7 +319,7 @@ of cumulants of order 2, ..., m-2
 function cumulant{T <: AbstractFloat}(X::Matrix{T}, cum::SymmetricTensor{T}...)
   m = length(cum) + 2
   ret =  moment(X, m, cum[1].bls)
-  for sigma in 2:floor(Int, m/2)
+  for sigma in 2:div(m, 2)
     ret -= outerprodcum(m, sigma, cum...)
   end
   ret
@@ -346,7 +347,8 @@ julia> convert(Array, cumulants(M, 3)[3])
 ```
 """
 function cumulants{T <: AbstractFloat}(X::Matrix{T}, m::Int = 4, b::Int = 2)
-  cvec = Array(SymmetricTensor{T}, m)
+  #cvec = Array(SymmetricTensor{T}, m)
+  cvec = Array{SymmetricTensor{T}}(m)
   cvec[1] = moment1c(X, 1, b)
   X = X .- mean(X, 1)
   for i = 2:m
