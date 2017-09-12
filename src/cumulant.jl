@@ -346,7 +346,6 @@ julia> convert(Array, cumulants(M, 3)[3])
 ```
 """
 function cumulants{T <: AbstractFloat}(X::Matrix{T}, m::Int = 4, b::Int = 2)
-  #cvec = Array(SymmetricTensor{T}, m)
   cvec = Array{SymmetricTensor{T}}(m)
   cvec[1] = moment1c(X, 1, b)
   X = X .- mean(X, 1)
