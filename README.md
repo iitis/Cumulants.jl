@@ -19,7 +19,7 @@ Within Julia, run
 julia> Pkg.add("Cumulants")
 ```
 
-to install the files.  Julia 0.5 is required.
+to install the files.  Julia 0.6 is required.
 
 
 ## Functions
@@ -62,13 +62,13 @@ julia> convert(Array, m)
  155.0  360.0  565.0
 
 [:, :, 2] =
- 100.0  230.0   360.0                                                                                                                                                       
- 230.0  560.0   890.0                                                                                                                                                       
- 360.0  890.0  1420.0                                                                                                                                                       
+ 100.0  230.0   360.0
+ 230.0  560.0   890.0
+ 360.0  890.0  1420.0
 
-[:, :, 3] =                                                                                                                                                                 
- 155.0   360.0   565.0                                                                                                                                                      
- 360.0   890.0  1420.0                                                                                                                                               
+[:, :, 3] =
+ 155.0   360.0   565.0
+ 360.0   890.0  1420.0
  565.0  1420.0  2275.0
  ```
 
@@ -219,14 +219,14 @@ All result files are saved in /res directory. To plot a graph run /res/plotcompt
 
 For the computational example on data use the following.
 
-The script `gandata.jl` generates `t = 150000000` realisations of `n = 4` dimensional data form the `t`-multivariate distribution with `\nu = 14` degrees of freedom, and theoretical 
+The script `gandata.jl` generates `t = 150000000` realisations of `n = 4` dimensional data form the `t`-multivariate distribution with `\nu = 14` degrees of freedom, and theoretical
 super-diagonal elements of those cumulants. Results are saved in `data/datafortests.jld`
 
 The script `testondata.jl` computes cumulant tensors of order `m = 1 - 6` for `data/datafortests.jld`, results are saved in `data/cumulants.jld`.
 
-To read `cumulants.jld` please run 
+To read `cumulants.jld` please run
 
-```julia 
+```julia
 julia> using JLD
 
 julia> using SymmetricTensors
