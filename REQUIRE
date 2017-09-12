@@ -1,11 +1,5 @@
-julia 0.5
+julia 0.6
 SymmetricTensors
 NullableArrays
-Iterators
 Combinatorics
 Distributions
-FactCheck
-NPZ
-PyPlot
-PyCall
-ArgParse
