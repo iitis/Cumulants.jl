@@ -78,7 +78,6 @@ c_{ijkl} = m_{ijkl} - m_{ijk} m_{l} [4] - m_{ij} m_{kl} [3] + 2 m_{ij} m_{k} m_{
 
 function cumulants_from_moments{T <: AbstractFloat}(raw::Vector{Array{T}})
   k = length(raw)
-  #cumarr = Array(Array{Float64}, k)
   cumarr = Array{Array{Float64}}(k)
   for j in 1:k
     dimr = size(raw[j])

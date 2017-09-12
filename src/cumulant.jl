@@ -200,7 +200,6 @@ Array{Float64,N}[
 function accesscum{T <: AbstractFloat}(mulind::Tuple,
                                        part::IndexPart,
                                        cum::SymmetricTensor{T}...)
-  #blocks = Array(Array{T}, part.npart)
   blocks = Array{Array{T}}(part.npart)
   sq = cum[1].sqr || !(cum[1].bln in mulind)
   for k in 1:part.npart
