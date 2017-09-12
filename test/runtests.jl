@@ -1,14 +1,10 @@
-if VERSION >= v"0.5.0-dev+7720"
-    using Base.Test
-else
-    using BaseTestNext
-    const Test = BaseTestNext
-end
+using Base.Test
+
 using SymmetricTensors
 using Cumulants
 using Distributions
 using NullableArrays
-#using Iterators
+
 import Cumulants: indpart, momentblock, blockel, accesscum, outprodblocks,
  IndexPart, outerprodcum, naivemoment, pyramidmoment, pyramidcumulants, mom2cums,
   usebl
@@ -71,14 +67,14 @@ end
     c2 = SymmetricTensor([1.0 2.0 3.0; 2.0 4.0 6.0; 3.0 6.0 5.0])
     blocks = accesscum((1,1,1,1), indexpart[1], c2,c2)
     @test blocks == [[1.0 2.0; 2.0 4.0], [1.0 2.0; 2.0 4.0]]
-    @fact accesscum((1,1,1,2), indexpart[1], c2,c2) --> [[1.0 2.0; 2.0 4.0], # TODO FactCheck2TestSets Parsing Error
+    @test accesscum((1,1,1,2), indexpart[1], c2,c2) == [[1.0 2.0; 2.0 4.0],
     [3.0 0.0; 6.0 0.0]]
-    @fact accesscum((1,1,1,2), indexpart[3], c2,c2) --> [[3.0 0.0; 6.0 0.0], # TODO FactCheck2TestSets Parsing Error
+    @test accesscum((1,1,1,2), indexpart[3], c2,c2) == [[3.0 0.0; 6.0 0.0],
     [1.0 2.0; 2.0 4.0]]
     block = outprodblocks(indexpart[1], blocks)
     @test block[:, :, 1, 1] == [1.0 2.0; 2.0 4.0]
     @test block[:, :, 1, 2] == [2.0 4.0; 4.0 8.0]
-    @test outerprodcum(4, 2, c2, c2).frame[1, 1, 1, 1].value[1, 1, :] == [3.0, 6.0, 6.0, 12.0]
+    @test vec(outerprodcum(4, 2, c2, c2).frame[1, 1, 1, 1].value[1, 1, :, :]) == [3.0, 6.0, 6.0, 12.0]
   end
 
 end
