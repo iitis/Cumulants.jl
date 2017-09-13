@@ -4,7 +4,7 @@
 Return z - Vector{Float} , vectorsed outer/kroneker product o vectors a and b
 Auxiliary function for rawmoment
 """
-function outer!{T <: AbstractFloat}(z::Vector{T}, a::Vector{T}, b::Vector{T})
+function outer!(z::Vector{T}, a::Vector{T}, b::Vector{T}) where T<: AbstractFloat
     sa = size(a,1)
     sb = size(b,1)
     m = 1
@@ -21,7 +21,7 @@ end
 Returns updated Vector{Float} A, by adding elementwisely Vector{Float} B
 Auxiliary function for rawmoment
 """
-function updvec!{T<: AbstractFloat}(A::Vector{T}, B::Vector{T})
+function updvec!(A::Vector{T}, B::Vector{T}) where T<: AbstractFloat
   n = size(A, 1)
   for i=1:n
     @inbounds A[i] += B[i]
@@ -38,7 +38,7 @@ pyramid structures and blocks
 Returns Array{Float, m}, the m'th moment's tensor
 """
 
-function rawmoment{T <: AbstractFloat}(X::Matrix{T}, m::Int = 4)
+function rawmoment(X::Matrix{T}, m::Int = 4) where T<: AbstractFloat
   t,n = size(X)
   if m == 1
     return mean(X, 1)[1,:]
@@ -63,7 +63,7 @@ end
 Returns [Array{Float, 1}, ..., Array{Float, k}] noncentral moment tensors of
 order 1, ..., k
 """
-raw_moments_upto_k{T <: AbstractFloat}(X::Matrix{T}, k::Int = 4) =
+raw_moments_upto_k(X::Matrix{T}, k::Int = 4) where T<: AbstractFloat =
   [rawmoment(X, i) for i in 1:k]
 
 """
@@ -76,7 +76,7 @@ c_{ijkl} = m_{ijkl} - m_{ijk} m_{l} [4] - m_{ij} m_{kl} [3] + 2 m_{ij} m_{k} m_{
 -6 m_{i} m_{j} m_{k} m_{l}
 """
 
-function cumulants_from_moments{T <: AbstractFloat}(raw::Vector{Array{T}})
+function cumulants_from_moments(raw::Vector{Array{T}}) where T<: AbstractFloat
   k = length(raw)
   cumarr = Array{Array{Float64}}(k)
   for j in 1:k
@@ -104,8 +104,8 @@ dpp - vector of a factor for each product of moments (a factorial factor).
 Returns Array{Float, n} the n'th cumulant tensor
 
 """
-function onecumulant{T <: AbstractFloat}(ind::Tuple, raw::Vector{Array{T}},
-  spp::Vector, sppl::Vector{Vector{Int}}, dpp::Vector{Int})
+function onecumulant(ind::Tuple, raw::Vector{Array{T}}, spp::Vector,
+          sppl::Vector{Vector{Int}}, dpp::Vector{Int}) where T<: AbstractFloat
   ret = zero(T)
   for i in 1:length(spp)
     part = spp[i]
@@ -126,5 +126,5 @@ end
 
 Returns a vector of 1,2, .., k dims Arrays{Float} of cumulant tensors
 """
-mom2cums{T <: AbstractFloat}(x::Matrix{T}, k::Int) =
+mom2cums(x::Matrix{T}, k::Int) where T<: AbstractFloat =
   cumulants_from_moments(raw_moments_upto_k(x, k))

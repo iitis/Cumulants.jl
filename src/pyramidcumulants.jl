@@ -48,7 +48,7 @@ julia> pyramidmoment(M, 3)
  -0.0407653   0.0120729
 ```
 """
-function pyramidmoment{T<:AbstractFloat}(data::Matrix{T}, m::Int)
+function pyramidmoment(data::Matrix{T}, m::Int) where T<: AbstractFloat
     n = size(data,2)
     ret = zeros(T, fill(n, m)...)
     for ind in indices(m, n)
@@ -66,8 +66,8 @@ end
 Returns Float, element of the sum of products of lower cumulants at given
  multi-index and set of its partitions
 """
-function mixedel{T<:AbstractFloat}(cum::Vector{Array{T}}, mulind::Tuple,
-  parts::Vector{Vector{Vector{Int}}})
+function mixedel(cum::Vector{Array{T}}, mulind::Tuple,
+                  parts::Vector{Vector{Vector{Int}}}) where T<: AbstractFloat
     sum = 0.
     for k = 1:length(parts)
         prod = 1.
@@ -85,7 +85,7 @@ end
 
 Returns Array{Float, m}, the mixed array (sum of products of lower cumulants)
 """
-function mixedarr{T<:AbstractFloat}(cumulants::Vector{Array{T}}, m::Int)
+function mixedarr(cumulants::Vector{Array{T}}, m::Int) where T<: AbstractFloat
     n = size(cumulants[1], 1)
     sumofprod = zeros(fill(n, m)...)
     parts = part(m)
@@ -119,7 +119,7 @@ julia> pyramidcumulants(M, 3)[2]
  0.0  0.0
 ```
 """
-function pyramidcumulants{T<:AbstractFloat}(X::Matrix{T}, m::Int = 4)
+function pyramidcumulants(X::Matrix{T}, m::Int = 4) where T<: AbstractFloat
     cumulants = Array{T}[]
     push!(cumulants, pyramidmoment(X, 1))
     X = X .- mean(X, 1)

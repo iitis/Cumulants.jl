@@ -14,7 +14,7 @@ julia> momel(M, (1,1,1,1))
 ```
 """
 
-momel{T <: AbstractFloat}(X::Matrix{T}, multind::Tuple) = blockel(X, multind, multind, 0)
+momel(X::Matrix{T}, multind::Tuple) where T<: AbstractFloat = blockel(X, multind, multind, 0)
 
 """
 
@@ -37,7 +37,7 @@ julia> naivemoment(M, 3)
 
 ```
 """
-function naivemoment{T<:AbstractFloat}(X::Matrix{T}, m::Int = 4)
+function naivemoment(X::Matrix{T}, m::Int = 4) where T<: AbstractFloat
   n = size(X, 2)
   moment = zeros(T, fill(n, m)...)
   for i = 1:(n^m)
@@ -66,7 +66,7 @@ mixel(M, (1,1,1,1,1,1))
 ```
 """
 
-function mixel{T<:AbstractFloat}(X::Matrix{T}, i::Tuple)
+function mixel(X::Matrix{T}, i::Tuple) where T<: AbstractFloat
   a = zero(T)
   if length(i) == 4
     a -= momel(X, (i[1],i[2]))*momel(X, (i[3],i[4]))
@@ -131,7 +131,7 @@ julia> naivecumulant(M, 3)
 
 ```
 """
-function naivecumulant{T<:AbstractFloat}(X::Matrix{T}, m::Int = 4)
+function naivecumulant(X::Matrix{T}, m::Int = 4) where T<: AbstractFloat
   m < 7 || throw(AssertionError("naive implementation of $m cumulant not supported"))
   if m == 1
     return naivemoment(X,m)

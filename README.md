@@ -26,7 +26,7 @@ to install the files.  Julia 0.6 is required.
 ### Moment
 
 ```julia
-julia> moment{T <: AbstractFloat}(data::Matrix{T}, m::Int, b::Int = 2)
+julia> moment(data::Matrix{T}, m::Int, b::Int = 2) where T<: AbstractFloat
 ```
 
 Returns a `SymmetricTensor{T, m}` of the moment of order `m` of multivariate data represented by a `t` by `n` matrix, i.e. data with `n` marginal variables and `t` realisations. The argument `b` with defalt value `2`, is an optional `Int` that determines the size
@@ -75,7 +75,7 @@ julia> convert(Array, m)
  ### Cumulants
 
  ```julia
-julia> cumulants{T <: AbstractFloat}(data::Matrix{T}, m::Int = 4, b::Int = 2)
+julia> cumulants(data::Matrix{T}, m::Int = 4, b::Int = 2) where T<: AbstractFloat
 ```
 
 Returns a vector of `SymmetricTensor{T, i}` `i = 1,2,3,...,m` of cumulants of
@@ -133,7 +133,7 @@ julia> @everywhere using Cumulants
 Naive algorithms of moment and cumulant tensors calculations are also available.
 
  ```julia
-julia> {T <: AbstractFloat}naivemoment(data::Matrix{T}, m::Int = 4)
+julia> naivemoment(data::Matrix{T}, m::Int = 4) where T<: AbstractFloat
 ```
 Returns array{T, m} of the m'th moment of data. calculated using a naive algorithm.
 
@@ -158,7 +158,7 @@ julia> naivemoment(data, 3)
 ```
 
  ```julia
-julia> naivecumulant{T <: AbstractFloat}(data::Matrix{T}, m::Int = 4)
+julia> naivecumulant(data::Matrix{T}, m::Int = 4) where T<: AbstractFloat
 ```
 Returns `Array{T, m}` of the `m`'th cumulant of data, calculated using a naive algorithm. Works for `1 <= m , 7`, for `m >= 7` throws exception.
 
