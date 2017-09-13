@@ -155,6 +155,6 @@ addprocs(3)
     @test convert(Array, c5) ≈ cn5
     @test convert(Array, c6) ≈ cn6
     @test convert(Array, c7) ≈ cn7
-    $(Expr(:toplevel, :(@test convert(Array, c8) ≈ cn8)))
+    @test convert(Array, c8) ≈ cn8
   end
 end
