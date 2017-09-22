@@ -242,3 +242,5 @@ To plot super-diagonal elements of those cumulants and their theoretical values 
 
 
 Krzysztof Domino, Piotr Gawron, Łukasz Pawela, *The tensor network representation of high order cumulant and algorithm for their calculation*, [arXiv:1701.05420](https://arxiv.org/abs/1701.05420)
+
+This project was partially financed by the National Science Centre, Poland – project number 2014/15/B/ST6/05204.
