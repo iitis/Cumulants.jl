@@ -15,12 +15,12 @@ end
 
 function savect(t::Vector{Int}, n::Int, m::Int)
   maxb = round(Int, sqrt(n))
-  comptimes = zeros(maxb-1, length(t))
+  comptimes = zeros(maxb, length(t))
   println("max block size = ", maxb)
   for k in 1:length(t)
     data = randn(t[k], n)
-    for b in 2:maxb
-      comptimes[b-1, k] = comptime(data, cumulants, m, b)
+    for b in 1:maxb
+      comptimes[b, k] = comptime(data, cumulants, m, b)
       println("n = ", n)
       println("bloks size = ", b)
     end
@@ -32,7 +32,7 @@ function savect(t::Vector{Int}, n::Int, m::Int)
   push!(compt, "n" => n)
   push!(compt, "m" => m)
   push!(compt, "x" => "block size")
-  push!(compt, "block size" => [collect(2:maxb)...])
+  push!(compt, "block size" => [collect(1:maxb)...])
   push!(compt, "functions" => [["cumulants"]])
   save(filename, compt)
 end
