@@ -202,7 +202,7 @@ This script returns to a .jld file computational times, given following paramete
 * `-t (vararg Int)`: number of realisations of random variable, by defalut `t = 10000`.
 Be careful while using `n`>`4` and large `m`, where naive algorithms might need a large computational time and memory usage. Naive algorithms does not use the block structures, hence they computes and stores a whole cumulant tensor regardless its symmetry. All comparisons performed by this script use one core.
 
-To analyse the computational time of cumulants for different block sizes `1 < b =< Int(sqrt(n))`, we supply the executable script `comptimeblocks.jl`.
+To analyse the computational time of cumulants for different block sizes `1 =< b =< Int(sqrt(n))`, we supply the executable script `comptimeblocks.jl`.
 This script returns to a .jld file computational times, given following parameters:
 * `-m (Int)`: cumulant's order, by default `m = 4`,
 * `-n (Int)`: numbers of marginal variables, by default `m = 48`,
