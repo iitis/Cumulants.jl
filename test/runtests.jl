@@ -4,12 +4,16 @@ using SymmetricTensors
 using Cumulants
 using Distributions
 using NullableArrays
+using Combinatorics
 
 import Cumulants: indpart, momentblock, blockel, accesscum, outprodblocks,
- IndexPart, outerprodcum, naivemoment, pyramidmoment, pyramidcumulants, mom2cums,
-  usebl
+ IndexPart, outerprodcum, usebl, momel, mixel
 
 import SymmetricTensors: indices
+
+include("testfunctions/pyramidcumulants.jl")
+include("testfunctions/mom2cum.jl")
+include("testfunctions/leeuw_cumulants.jl")
 
 srand(42)
 x = randn(10,4);
@@ -121,18 +125,19 @@ end
   @test isapprox(cn8, zeros(Float64, 2, 2, 2, 2, 2, 2, 2, 2), atol=1.0e-5)
 end
 
-  cn1, cn2, cn3, cn4, cn5, cn6, cn7, cn8 = pyramidcumulants(data[:, 1:2], 8)
-@testset "Tests implementation from raw moments" begin
+c1, c2, c3, c4, c5, c6, c7, c8 = cumulants(data[:, 1:2], 8, 2)
+@testset "Tests cumulants vs implementation from raw moments" begin
   cm1, cm2, cm3, cm4, cm5, cm6 = mom2cums(data[:, 1:2], 6)
-  @test cm2 ≈ cn2
-  @test cm3 ≈ cn3
-  @test cm4 ≈ cn4
-  @test cm5 ≈ cn5
-  @test cm6 ≈ cn6
+  @test cm2 ≈ convert(Array, c2)
+  @test cm3 ≈ convert(Array, c3)
+  @test cm4 ≈ convert(Array, c4)
+  @test cm5 ≈ convert(Array, c5)
+  @test cm6 ≈ convert(Array, c6)
+  @test first_four_cumulants(data[:, 1:2])[:c4] ≈ convert(Array, c4)
 end
 
+cn1, cn2, cn3, cn4, cn5, cn6, cn7, cn8 = pyramidcumulants(data[:, 1:2], 8)
 @testset "Cumulants vs pyramid implementation square blocks" begin
-  c1, c2, c3, c4, c5, c6, c7, c8 = cumulants(data[:, 1:2], 8, 2)
   @test convert(Array, (cumulants(gaus_dat, 3))[3]) ≈ zeros(Float64, 2, 2, 2)
   @test convert(Array, c1) ≈ cn1
   @test convert(Array, c2) ≈ cn2
@@ -147,7 +152,6 @@ end
 addprocs(3)
 @everywhere using Cumulants
 @testset "Cumulants parallel implementation" begin
-  @testset "" begin
   c1, c2, c3, c4, c5, c6, c7, c8 = cumulants(data[:, 1:2], 8, 2)
     @test convert(Array, c2) ≈ cn2
     @test convert(Array, c3) ≈ cn3
@@ -156,5 +160,4 @@ addprocs(3)
     @test convert(Array, c6) ≈ cn6
     @test convert(Array, c7) ≈ cn7
     @test convert(Array, c8) ≈ cn8
-  end
 end

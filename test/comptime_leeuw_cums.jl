@@ -3,7 +3,9 @@
 using Cumulants
 using JLD
 using ArgParse
-import Cumulants: mom2cums
+#import Cumulants: mom2cums
+
+include("testfunctions/leeuw_cumulants.jl")
 
 """
   comptime(data::Matrix{Float}, f::Function, m::Int)
@@ -45,9 +47,9 @@ Save a file in jld format of the computional times of moment, naivemoment, rawmo
 
 """
 function savecomptime(m::Int, t::Vector{Int}, n::Vector{Int})
-  filename = replace("res/"*string(m)*string(t)*string(n)*"soa.jld", "[", "_")
+  filename = replace("res/"*string(m)*string(t)*string(n)*"leeuw_cums.jld", "[", "_")
   filename = replace(filename, "]", "")
-  fs = [mom2cums, cumulants]
+  fs = [cumulants_upto_p, cumulants]
   compt = Dict{String, Any}()
   for f in fs
     fname = "$(f)"[11:end]
@@ -59,7 +61,7 @@ function savecomptime(m::Int, t::Vector{Int}, n::Vector{Int})
   push!(compt, "n" => n)
   push!(compt, "m" => m)
   push!(compt, "x" => "n")
-  push!(compt, "functions" => [["mom2cums", "cumulants"]])
+  push!(compt, "functions" => [["upto_p", "cumulants"]])
   save(filename, compt)
 end
 
