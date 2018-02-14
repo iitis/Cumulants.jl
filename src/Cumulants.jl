@@ -9,7 +9,7 @@ module Cumulants
   include("cumulant.jl")
 
   #naive implementation
-  include("naivecumulants")
+  include("naivecumulants.jl")
 
   export moment, cumulants, naivecumulant, naivemoment
 end
