@@ -13,7 +13,7 @@ import SymmetricTensors: indices
 
 include("testfunctions/pyramidcumulants.jl")
 include("testfunctions/mom2cum.jl")
-include("testfunctions/leeuw_cumulants.jl")
+include("testfunctions/leeuw_cumulants_no_nested_func.jl")
 
 srand(42)
 x = randn(10,4);
@@ -133,7 +133,9 @@ c1, c2, c3, c4, c5, c6, c7, c8 = cumulants(data[:, 1:2], 8, 2)
   @test cm4 ≈ convert(Array, c4)
   @test cm5 ≈ convert(Array, c5)
   @test cm6 ≈ convert(Array, c6)
-  @test first_four_cumulants(data[:, 1:2])[:c4] ≈ convert(Array, c4)
+  llc = first_four_cumulants(data[:, 1:2])
+  @test llc[:c3] ≈ convert(Array, c3)
+  @test llc[:c4] ≈ convert(Array, c4)
 end
 
 cn1, cn2, cn3, cn4, cn5, cn6, cn7, cn8 = pyramidcumulants(data[:, 1:2], 8)

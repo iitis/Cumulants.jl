@@ -5,7 +5,7 @@ using JLD
 using ArgParse
 #import Cumulants: mom2cums
 
-include("testfunctions/leeuw_cumulants.jl")
+include("testfunctions/leeuw_cumulants_no_nested_func.jl")
 
 """
   comptime(data::Matrix{Float}, f::Function, m::Int)
