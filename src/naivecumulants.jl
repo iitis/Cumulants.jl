@@ -14,7 +14,7 @@ julia> momel(M, (1,1,1,1))
 ```
 """
 
-momel(X::Matrix{T}, multind::Tuple) where T<: AbstractFloat = blockel(X, multind, multind, 0)
+@inline momel(X::Matrix{T}, multind::Tuple) where T<: AbstractFloat = blockel(X, multind, multind, 0)
 
 """
 
