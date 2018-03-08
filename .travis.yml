@@ -10,7 +10,6 @@ notifications:
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
   - julia -e 'Pkg.clone("https://github.com/ZKSI/SymmetricTensors.jl.git")'
-  - julia -e 'Pkg.checkout("SymmetricTensors.jl", "nonullablearrays")'
-  - julia -e 'Pkg.clone(pwd()); Pkg.checkout("Cumulants.jl", "nonullablearrays"); Pkg.build("Cumulants"); Pkg.test("Cumulants"; coverage=true)'
+  - julia -e 'Pkg.checkout("Cumulants", "nonullablearrays"); Pkg.build("Cumulants"); Pkg.test("Cumulants"; coverage=true)'
 after_success:
   - julia -e 'cd(Pkg.dir("Cumulants")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(process_folder())'
