@@ -84,8 +84,9 @@ function moment1c(X::Matrix{T}, m::Int, b::Int=2) where T <: AbstractFloat
   n = size(X, 2)
   sizetest(n, b)
   nbar = mod(n,b)==0 ? n÷b : n÷b + 1
-  ret = NullableArray(Array{T, m}, fill(nbar, m)...)
-  for j in indices(m, nbar)
+  # ret = NullableArray(Array{T, m}, fill(nbar, m)...)
+  ret = arraynarrays(T, fill(nbar, m)...)
+  for j in _indices(m, nbar)
     dims = (mod(n,b) == 0 || !(nbar in j))? (fill(b,m)...): usebl(j, n, b, nbar)
     @inbounds ret[j...] = momentblock(X, j, dims, b)
   end
@@ -287,8 +288,9 @@ function outerprodcum(retd::Int, npart::Int,
                                  cum::SymmetricTensor{T}...;
                                  exclpartlen::Int = 1) where T <: AbstractFloat
   parts = indpart(retd, npart, exclpartlen)
-  prodcum = NullableArray(Array{T, retd}, fill(cum[1].bln, retd)...)
-  for muli in indices(retd, cum[1].bln)
+  # prodcum = NullableArray(Array{T, retd}, fill(cum[1].bln, retd)...)
+  prodcum = arraynarrays(T, fill(cum[1].bln, retd)...)
+  for muli in _indices(retd, cum[1].bln)
     block = zeros(T, fill(cum[1].bls, retd)...)
     for part in parts
       blocks = accesscum(muli, part, cum...)

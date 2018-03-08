@@ -3,13 +3,12 @@ using Base.Test
 using SymmetricTensors
 using Cumulants
 using Distributions
-using NullableArrays
 using Combinatorics
 
 import Cumulants: indpart, momentblock, blockel, accesscum, outprodblocks,
  IndexPart, outerprodcum, usebl, momel, mixel
 
-import SymmetricTensors: indices
+import SymmetricTensors: _indices
 
 include("testfunctions/pyramidcumulants.jl")
 include("testfunctions/mom2cum.jl")
@@ -78,7 +77,7 @@ end
     block = outprodblocks(indexpart[1], blocks)
     @test block[:, :, 1, 1] == [1.0 2.0; 2.0 4.0]
     @test block[:, :, 1, 2] == [2.0 4.0; 4.0 8.0]
-    @test vec(outerprodcum(4, 2, c2, c2).frame[1, 1, 1, 1].value[1, 1, :, :]) == [3.0, 6.0, 6.0, 12.0]
+    @test vec((outerprodcum(4, 2, c2, c2).frame[1, 1, 1, 1])[1, 1, :, :]) == [3.0, 6.0, 6.0, 12.0]
   end
 
 end
