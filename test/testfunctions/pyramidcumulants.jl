@@ -51,7 +51,7 @@ julia> pyramidmoment(M, 3)
 function pyramidmoment(data::Matrix{T}, m::Int) where T<: AbstractFloat
     n = size(data,2)
     ret = zeros(T, fill(n, m)...)
-    for ind in _indices(m, n)
+    for ind in pyramidindices(m, n)
       @inbounds temp = momel(data, ind)
       for per in collect(permutations([ind...]))
         @inbounds ret[per...] = temp
@@ -89,7 +89,7 @@ function mixedarr(cumulants::Vector{Array{T}}, m::Int) where T<: AbstractFloat
     n = size(cumulants[1], 1)
     sumofprod = zeros(fill(n, m)...)
     parts = part(m)
-    for ind in _indices(m, n)
+    for ind in pyramidindices(m, n)
       pyramid = mixedel(cumulants, ind, parts)
       for per in collect(permutations([ind...]))
         @inbounds sumofprod[per...] = pyramid

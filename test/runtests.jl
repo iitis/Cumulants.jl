@@ -8,7 +8,7 @@ using Combinatorics
 import Cumulants: indpart, momentblock, blockel, accesscum, outprodblocks,
  IndexPart, outerprodcum, usebl, momel, mixel
 
-import SymmetricTensors: _indices
+import SymmetricTensors: pyramidindices
 
 include("testfunctions/pyramidcumulants.jl")
 include("testfunctions/mom2cum.jl")

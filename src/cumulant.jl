@@ -86,7 +86,7 @@ function moment1c(X::Matrix{T}, m::Int, b::Int=2) where T <: AbstractFloat
   nbar = mod(n,b)==0 ? n÷b : n÷b + 1
   # ret = NullableArray(Array{T, m}, fill(nbar, m)...)
   ret = arraynarrays(T, fill(nbar, m)...)
-  for j in _indices(m, nbar)
+  for j in pyramidindices(m, nbar)
     dims = (mod(n,b) == 0 || !(nbar in j))? (fill(b,m)...): usebl(j, n, b, nbar)
     @inbounds ret[j...] = momentblock(X, j, dims, b)
   end
@@ -290,7 +290,7 @@ function outerprodcum(retd::Int, npart::Int,
   parts = indpart(retd, npart, exclpartlen)
   # prodcum = NullableArray(Array{T, retd}, fill(cum[1].bln, retd)...)
   prodcum = arraynarrays(T, fill(cum[1].bln, retd)...)
-  for muli in _indices(retd, cum[1].bln)
+  for muli in pyramidindices(retd, cum[1].bln)
     block = zeros(T, fill(cum[1].bls, retd)...)
     for part in parts
       blocks = accesscum(muli, part, cum...)
