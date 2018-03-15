@@ -266,22 +266,22 @@ in this algorithm exclpartlen = 1
 ```jldoctest
 julia> cum = SymmetricTensor([1.0 2.0 3.0; 2.0 4.0 6.0; 3.0 6.0 5.0]);
 
-julia> outerpodcum(4,2,cum)
-SymmetricTensor(Nullable{Array{Float64,4}}[[3.0 6.0; 6.0 12.0]
+julia> outerprodcum(4,2,cum, cum)
+SymmetricTensors.SymmetricTensor{Float64,4}(Union{Array{Float64,4}, Void}[[3.0 6.0; 6.0 12.0]
 
 [6.0 12.0; 12.0 24.0]
 
 [6.0 12.0; 12.0 24.0]
 
-[12.0 24.0; 24.0 48.0] #NULL; #NULL #NULL]
+[12.0 24.0; 24.0 48.0] nothing; nothing nothing]
 
-Nullable{Array{Float64,4}}[#NULL #NULL; #NULL #NULL]
+Union{Array{Float64,4}, Void}[nothing nothing; nothing nothing]
 
-Nullable{Array{Float64,4}}[[9.0 18.0; 18.0 36.0]
+Union{Array{Float64,4}, Void}[[9.0 18.0; 18.0 36.0]
 
-[18.0 36.0; 36.0 72.0] #NULL; #NULL #NULL]
+[18.0 36.0; 36.0 72.0] nothing; nothing nothing]
 
-Nullable{Array{Float64,4}}[[23.0 46.0; 46.0 92.0] [45.0; 90.0]; #NULL [75.0]],2,2,3,false)
+Union{Array{Float64,4}, Void}[[23.0 46.0; 46.0 92.0] [45.0; 90.0]; nothing [75.0]], 2, 2, 3, false)
 ```
 """
 function outerprodcum(retd::Int, npart::Int,
