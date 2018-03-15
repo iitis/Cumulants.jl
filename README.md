@@ -46,12 +46,11 @@ julia> data = reshape(collect(1.:15.),(5,3))
 
 ```julia
 julia> m = moment(data, 3)
-SymmetricTensors.SymmetricTensor{Float64,3}(Nullable{Array{Float64,3}}[[45.0 100.0; 100.0 230.0]
+SymmetricTensors.SymmetricTensor{Float64,3}(Union{Array{Float64,3}, Void}[[45.0 100.0; 100.0 230.0]
 
-[100.0 230.0; 230.0 560.0] NULL; NULL NULL]
+[100.0 230.0; 230.0 560.0] nothing; nothing nothing]
 
-Nullable{Array{Float64,3}}[[155.0 360.0; 360.0 890.0] [565.0; 1420.0]; NULL [2275.0]], 2, 2, 3, false)
-
+Union{Array{Float64,3}, Void}[[155.0 360.0; 360.0 890.0] [565.0; 1420.0]; nothing [2275.0]], 2, 2, 3, false)
 ```
 To convert to array use `convert`
 
@@ -90,14 +89,15 @@ that determines a size of blocks in `SymmetricTensors` type.
 julia> c = cumulants(data, 3);
 
 julia> c[2]
-SymmetricTensors.SymmetricTensor{Float64,2}(Nullable{Array{Float64,2}}[[2.0 2.0; 2.0 2.0] [2.0; 2.0]; NULL [2.0]], 2, 2, 3, false)
+SymmetricTensors.SymmetricTensor{Float64,2}(Union{Array{Float64,2}, Void}[[2.0 2.0; 2.0 2.0] [2.0; 2.0]; nothing [2.0]], 2, 2, 3, false)
 
-julia> c[3]
-SymmetricTensors.SymmetricTensor{Float64,3}(Nullable{Array{Float64,3}}[[0.0 0.0; 0.0 0.0]
 
-[0.0 0.0; 0.0 0.0] NULL; NULL NULL]
+julia>  c[3]
+SymmetricTensors.SymmetricTensor{Float64,3}(Union{Array{Float64,3}, Void}[[0.0 0.0; 0.0 0.0]
 
-Nullable{Array{Float64,3}}[[0.0 0.0; 0.0 0.0] [0.0; 0.0]; NULL [0.0]], 2, 2, 3, false)
+[0.0 0.0; 0.0 0.0] nothing; nothing nothing]
+
+Union{Array{Float64,3}, Void}[[0.0 0.0; 0.0 0.0] [0.0; 0.0]; nothing [0.0]], 2, 2, 3, false)
 ```
 To convert to array given element of the vector `c`, just run:
 
@@ -162,7 +162,7 @@ julia> naivemoment(data, 3)
  ```julia
 julia> naivecumulant(data::Matrix{T}, m::Int = 4) where T<: AbstractFloat
 ```
-Returns `Array{T, m}` of the `m`'th cumulant of data, calculated using a naive algorithm. Works for `1 <= m , 7`, for `m >= 7` throws exception.
+Returns `Array{T, m}` of the `m`'th cumulant of data, calculated using a naive algorithm. Works for `1 <= m  < 7`, for `m >= 7` throws exception.
 
 
 ```julia
