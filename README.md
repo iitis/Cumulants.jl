@@ -221,7 +221,7 @@ All result files are saved in /res directory. To plot a graph run /res/plotcompt
 
 For the computational example on data use the following.
 
-The script `gandata.jl` generates `t = 150000000` realisations of `n = 4` dimensional data form the `t`-multivariate distribution with `\nu = 14` degrees of freedom, and theoretical
+The script `gandata.jl` generates `t = 150000000` realisations of `n = 4` dimensional data form the `t`-multivariate distribution with `ν = 14` degrees of freedom, and theoretical
 super-diagonal elements of those cumulants. Results are saved in `data/datafortests.jld`
 
 The script `testondata.jl` computes cumulant tensors of order `m = 1 - 6` for `data/datafortests.jld`, results are saved in `data/cumulants.jld`.
