@@ -9,7 +9,6 @@ notifications:
   email: false
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia -e 'Pkg.clone("https://github.com/ZKSI/SymmetricTensors.jl.git")'
   - julia -e 'Pkg.clone("https://github.com/ZKSI/Cumulants.jl.git")'
   - julia -e 'Pkg.build("Cumulants"); Pkg.test("Cumulants"; coverage=true)'
 after_success:
