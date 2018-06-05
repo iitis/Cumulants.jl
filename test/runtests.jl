@@ -67,7 +67,7 @@ end
   end
 
   @testset "operation on blocks" begin
-    c2 = SymmetricTensor([1.0 2.0 3.0; 2.0 4.0 6.0; 3.0 6.0 5.0])
+    c2 = SymmetricTensornew([1.0 2.0 3.0; 2.0 4.0 6.0; 3.0 6.0 5.0])
     blocks = accesscum((1,1,1,1), indexpart[1], c2,c2)
     @test blocks == [[1.0 2.0; 2.0 4.0], [1.0 2.0; 2.0 4.0]]
     @test accesscum((1,1,1,2), indexpart[1], c2,c2) == [[1.0 2.0; 2.0 4.0],
