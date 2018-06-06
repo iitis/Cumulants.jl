@@ -242,6 +242,6 @@ To plot super-diagonal elements of those cumulants and their theoretical values 
 # Citing this work
 
 
-Krzysztof Domino, Piotr Gawron, Łukasz Pawela, *EFFICIENT COMPUTATION OF HIGHER-ORDER CUMULANT TENSORS*, [arXiv:1701.05420](https://arxiv.org/abs/1701.05420)
+Krzysztof Domino, Piotr Gawron, Łukasz Pawela, *Efficient Computation of Higher-Order Cumulant Tensors*, SIAM J. Sci. Comput. 40, A1590 (2018)
 
 This project was partially financed by the National Science Centre, Poland – project number 2014/15/B/ST6/05204.
