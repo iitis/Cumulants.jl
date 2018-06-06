@@ -84,13 +84,12 @@ function moment1c(X::Matrix{T}, m::Int, b::Int=2) where T <: AbstractFloat
   n = size(X, 2)
   sizetest(n, b)
   nbar = mod(n,b)==0 ? n÷b : n÷b + 1
-  # ret = NullableArray(Array{T, m}, fill(nbar, m)...)
   ret = arraynarrays(T, fill(nbar, m)...)
   for j in pyramidindices(m, nbar)
     dims = (mod(n,b) == 0 || !(nbar in j))? (fill(b,m)...): usebl(j, n, b, nbar)
     @inbounds ret[j...] = momentblock(X, j, dims, b)
   end
-  SymmetricTensornew(ret; testdatstruct = false)
+  SymmetricTensor(ret; testdatstruct = false)
 end
 
 
@@ -197,7 +196,7 @@ Array{Float64,N}[
  ```
 """
 function accesscum(mulind::Tuple, part::IndexPart,
-                                  cum::SymmetricTensornew{T}...) where T <: AbstractFloat
+                                  cum::SymmetricTensor{T}...) where T <: AbstractFloat
   blocks = Array{Array{T}}(part.npart)
   sq = cum[1].sqr || !(cum[1].bln in mulind)
   for k in 1:part.npart
@@ -285,10 +284,9 @@ Union{Array{Float64,4}, Void}[[23.0 46.0; 46.0 92.0] [45.0; 90.0]; nothing [75.0
 ```
 """
 function outerprodcum(retd::Int, npart::Int,
-                                 cum::SymmetricTensornew{T}...;
+                                 cum::SymmetricTensor{T}...;
                                  exclpartlen::Int = 1) where T <: AbstractFloat
   parts = indpart(retd, npart, exclpartlen)
-  # prodcum = NullableArray(Array{T, retd}, fill(cum[1].bln, retd)...)
   prodcum = arraynarrays(T, fill(cum[1].bln, retd)...)
   for muli in pyramidindices(retd, cum[1].bln)
     block = zeros(T, fill(cum[1].bls, retd)...)
@@ -302,7 +300,7 @@ function outerprodcum(retd::Int, npart::Int,
     end
     @inbounds prodcum[muli...] = block
   end
-  SymmetricTensornew(prodcum; testdatstruct = false)
+  SymmetricTensor(prodcum; testdatstruct = false)
 end
 
 """
@@ -313,7 +311,7 @@ Returns: SymmetricTensor{Float, m}, a tensor of the m'th cumulant of X, given Ve
 of cumulants of order 2, ..., m-2
 """
 
-function cumulant(X::Matrix{T}, cum::SymmetricTensornew{T}...) where T <: AbstractFloat
+function cumulant(X::Matrix{T}, cum::SymmetricTensor{T}...) where T <: AbstractFloat
   m = length(cum) + 2
   ret =  moment(X, m, cum[1].bls)
   for sigma in 2:div(m, 2)
@@ -344,7 +342,7 @@ julia> convert(Array, cumulants(M, 3)[3])
 ```
 """
 function cumulants(X::Matrix{T}, m::Int = 4, b::Int = 2) where T <: AbstractFloat
-  cvec = Array{SymmetricTensornew{T}}(m)
+  cvec = Array{SymmetricTensor{T}}(m)
   cvec[1] = moment1c(X, 1, b)
   X = X .- mean(X, 1)
   for i = 2:m
