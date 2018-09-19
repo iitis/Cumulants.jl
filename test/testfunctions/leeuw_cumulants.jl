@@ -46,7 +46,7 @@ function raw_moments_upto_p(x, p=4)
         end
         y += z
     end
-    reshape(y, repmat([m+1],p)...)./n
+    reshape(y, repeat([m+1],p)...)./n
 end
 
 function cumulants_from_raw_moments(raw)
@@ -55,9 +55,9 @@ function cumulants_from_raw_moments(raw)
         cumu = zeros(eltype(raw), dimr...)
         nele = prod(dimr)
         ldim = length(dimr)
-        spp = Array{Array{Int64,2}}(ldim)
-        qpp::Array{Int64} = Array{Int64}(ldim)
-        rpp = Array{Any}(ldim)
+        spp = Array{Array{Int64,2}}(undef, ldim)
+        qpp::Array{Int64} = Array{Int64}(undef, ldim)
+        rpp = Array{Any}(undef, ldim)
 
         function one_cumulant_from_raw_moments(jnd, raw)
             jnd = [jnd[find(jnd.!=1)]...] - 1
@@ -76,7 +76,7 @@ function cumulants_from_raw_moments(raw)
                 term = qpp[length(und)]
                 for j in und
                     knd = jnd[find(ind.==j)] + 1
-                    lnd =  vcat(knd, repmat([1], nraw - length(knd)))
+                    lnd =  vcat(knd, repeat([1], nraw - length(knd)))
                     term *= raw[lnd...]
                 end
             sterm +=  term

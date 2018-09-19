@@ -1,7 +1,5 @@
 # following code is used to caclulate moments in SymmetricTensor form ##
-
 """
-
     blockel(X::Matrix{T}, i::Tuple, j::Tuple, b::Int)
 
 Returns Float, the element of the block (indexed by j) of the moment's tensor
@@ -17,9 +15,7 @@ julia> mom_el(M, (1,1), (1,1), 2)
 julia> mom_el(M, (1,1), (2,2), 2)
 37.0
 ```
-
 """
-
 function blockel(data::Matrix{T}, mi::Tuple, mj::Tuple, b::Int) where T <: AbstractFloat
   ret = 0.
   t = size(data, 1)
@@ -35,7 +31,6 @@ function blockel(data::Matrix{T}, mi::Tuple, mj::Tuple, b::Int) where T <: Abstr
 end
 
 """
-
   momentblock(X::Matrix{T}, j::Tuple, dims::Tuple, b::Int)
 
 Returns a block of a moment's tensor of X. A block is indexed by j and if size dims,
@@ -50,27 +45,24 @@ julia> momentblock(M, (1,1), (2,2), 2)
  7.0  10.0
 ```
 """
-
 function momentblock(X::Matrix{T}, j::Tuple, dims::Tuple,
                                              b::Int) where {T <: AbstractFloat}
   ret = zeros(T, dims)
   for ind = 1:(prod(dims))
-    i = ind2sub(dims, ind)
+    i = Tuple(CartesianIndices(dims)[ind])
     @inbounds ret[i...] = blockel(X, i, j, b)
   end
   ret
 end
-
 
 """
     usebl(bind::Tuple, n::Int, b::Int, nbar::Int)
 
 Returns: Tuple{Int}, sizes of the last block
 """
-
 function usebl(bind::Tuple, n::Int, b::Int, nbar::Int)
   bl = n - b*(nbar-1)
-  map(i -> (i == nbar)? (bl) : (b), bind)
+  map(i -> (i == nbar) ? (bl) : (b), bind)
 end
 
 """
@@ -79,19 +71,17 @@ end
 Returns: SymmetricTensor{Float, m}, a tensor of the m'th moment of X, where b
 is a block size. Uses 1 core implementation
 """
-
 function moment1c(X::Matrix{T}, m::Int, b::Int=2) where T <: AbstractFloat
   n = size(X, 2)
   sizetest(n, b)
   nbar = mod(n,b)==0 ? n÷b : n÷b + 1
-  ret = arraynarrays(T, fill(nbar, m)...)
+  ret = arraynarrays(T, fill(nbar, m)...,)
   for j in pyramidindices(m, nbar)
-    dims = (mod(n,b) == 0 || !(nbar in j))? (fill(b,m)...): usebl(j, n, b, nbar)
+    dims = (mod(n,b) == 0 || !(nbar in j)) ? (fill(b,m)...,) : usebl(j, n, b, nbar)
     @inbounds ret[j...] = momentblock(X, j, dims, b)
   end
   SymmetricTensor(ret; testdatstruct = false)
 end
-
 
 """
     momentnc(X::Matrix}, m::Int, b::Int)
@@ -99,7 +89,6 @@ end
 Returns: SymmetricTensor{Float, m}, a tensor of the m'th moment of X, where b
 is a block size. Uses multicore parallel implementation via pmap()
 """
-
 function momentnc(x::Matrix{T}, m::Int, b::Int = 2) where T <: AbstractFloat
   t = size(x, 1)
   f(z::Matrix{T}) = moment1c(z, m, b)
@@ -110,16 +99,14 @@ function momentnc(x::Matrix{T}, m::Int, b::Int = 2) where T <: AbstractFloat
   (r*sum(ret[1:(end-1)])+(t-(k-1)*r)*ret[end])/t
 end
 
-
 """
     moment(X::Matrix}, m::Int, b::Int)
 
 Returns: SymmetricTensor{Float, m}, a tensor of the m'th moment of X, where b
 is a block size. Calls 1 core or multicore moment function.
 """
-
-moment(X::Matrix{T}, m::Int, b::Int=2) where T <: AbstractFloat =
-  (nworkers()>1)? momentnc(X, m, b):moment1c(X, m, b)
+moment1(X::Matrix{T}, m::Int, b::Int=2) where T <: AbstractFloat =
+  (nworkers()>1) ? momentnc(X, m, b) : moment1c(X, m, b)
 
 # ---- following code is used to caclulate cumulants in SymmetricTensor form----
 """
@@ -128,7 +115,7 @@ Type that stores a partition of multiindex into subests, sizes of subests,
 size of original multitindex and number of subsets
 
 """
-type IndexPart
+mutable struct IndexPart
   part::Vector{Vector{Int64}}
   subsetslen::Vector{Int64}
   nind::Int
@@ -138,7 +125,6 @@ nind::Int, npart::Int) = new(part, subsetslen, nind, npart)
 end
 
 """
-
     indpart(nind::Int, npart::Int, e::Int = 1)
 
 Returns vector of IndexPart type, that includes partitions of set [1, 2, ..., nind]
@@ -153,7 +139,6 @@ julia>indpart(4,2)
  IndexPart(Array{Int64,1}[[1,4],[2,3]],[2,2],4,2)
 ```
 """
-
 function indpart(nind::Int, npart::Int, e::Int = 1)
     part_set = IndexPart[]
     for part in partitions(1:nind, npart)
@@ -166,7 +151,6 @@ function indpart(nind::Int, npart::Int, e::Int = 1)
 end
 
 """
-
   accesscum(mulind::Tuple{Int, ...}, ::IndexPart,
     cum::SymmetricTensor{Float}...)
 
@@ -197,7 +181,7 @@ Array{Float64,N}[
 """
 function accesscum(mulind::Tuple, part::IndexPart,
                                   cum::SymmetricTensor{T}...) where T <: AbstractFloat
-  blocks = Array{Array{T}}(part.npart)
+  blocks = Array{Array{T}}(undef, part.npart)
   sq = cum[1].sqr || !(cum[1].bln in mulind)
   for k in 1:part.npart
     data = getblockunsafe(cum[part.subsetslen[k]], mulind[part.part[k]])
@@ -205,7 +189,7 @@ function accesscum(mulind::Tuple, part::IndexPart,
       @inbounds blocks[k] = data
     else
       ind = map(i -> 1:size(data,i), 1:part.subsetslen[k])
-      datapadded = zeros(T, fill(cum[1].bls, part.subsetslen[k])...)
+      datapadded = zeros(T, fill(cum[1].bls, part.subsetslen[k])...,)
       @inbounds datapadded[ind...] = data
       @inbounds blocks[k] = datapadded
     end
@@ -242,13 +226,12 @@ julia> outprodblocks(IndexPart(Array{Int64,1}[[1,2],[3,4]],[2,2],4,2), blocks)
  8.0  16.0
 ```
 """
-
 function outprodblocks(inp::IndexPart,
                        blocks::Vector{Array{T}}) where T <: AbstractFloat
   b = size(blocks[1], 1)
-  block = zeros(T, fill(b, inp.nind)...)
+  block = zeros(T, fill(b, inp.nind)...,)
   for i = 1:(b^inp.nind)
-    muli = ind2sub((fill(b, inp.nind)...), i)
+    muli = Tuple(CartesianIndices((fill(b, inp.nind)...,))[i])
     @inbounds block[muli...] =
     mapreduce(k -> blocks[k][muli[inp.part[k]]...], *, 1:inp.npart)
   end
@@ -287,15 +270,15 @@ function outerprodcum(retd::Int, npart::Int,
                                  cum::SymmetricTensor{T}...;
                                  exclpartlen::Int = 1) where T <: AbstractFloat
   parts = indpart(retd, npart, exclpartlen)
-  prodcum = arraynarrays(T, fill(cum[1].bln, retd)...)
+  prodcum = arraynarrays(T, fill(cum[1].bln, retd)...,)
   for muli in pyramidindices(retd, cum[1].bln)
-    block = zeros(T, fill(cum[1].bls, retd)...)
+    block = zeros(T, fill(cum[1].bls, retd)...,)
     for part in parts
       blocks = accesscum(muli, part, cum...)
       @inbounds block += outprodblocks(part, blocks)
     end
     if !cum[1].sqr && cum[1].bln in muli
-      ran = map(k->cum[1].bln == muli[k]? (1:cum[1].dats% cum[1].bls): (1:cum[1].bls), 1:retd)
+      ran = map(k->cum[1].bln == muli[k] ? (1:cum[1].dats% cum[1].bls) : (1:cum[1].bls), 1:retd)
       @inbounds block = block[ran...]
     end
     @inbounds prodcum[muli...] = block
@@ -304,16 +287,14 @@ function outerprodcum(retd::Int, npart::Int,
 end
 
 """
-
     cumulant(X::Vector{Matrix}, cum::SymmetricTensor...)
 
 Returns: SymmetricTensor{Float, m}, a tensor of the m'th cumulant of X, given Vector
 of cumulants of order 2, ..., m-2
 """
-
 function cumulant(X::Matrix{T}, cum::SymmetricTensor{T}...) where T <: AbstractFloat
   m = length(cum) + 2
-  ret =  moment(X, m, cum[1].bls)
+  ret =  moment1(X, m, cum[1].bls)
   for sigma in 2:div(m, 2)
     ret -= outerprodcum(m, sigma, cum...)
   end
@@ -321,7 +302,6 @@ function cumulant(X::Matrix{T}, cum::SymmetricTensor{T}...) where T <: AbstractF
 end
 
 """
-
     cumulants(X::Matrix, m::Int, b::Int)
 
 Returns [SymmetricTensor{Float, 1}, SymmetricTensor{Float, 2}, ...,
@@ -342,11 +322,11 @@ julia> convert(Array, cumulants(M, 3)[3])
 ```
 """
 function cumulants(X::Matrix{T}, m::Int = 4, b::Int = 2) where T <: AbstractFloat
-  cvec = Array{SymmetricTensor{T}}(m)
+  cvec = Array{SymmetricTensor{T}}(undef, m)
   cvec[1] = moment1c(X, 1, b)
-  X = X .- mean(X, 1)
+  X = X .- mean(X, dims=1)
   for i = 2:m
-    @inbounds cvec[i] = (i < 4)? moment1c(X, i, b): cumulant(X, cvec[1:(i-2)]...)
+    @inbounds cvec[i] = (i < 4) ? moment1c(X, i, b) : cumulant(X, cvec[1:(i-2)]...)
   end
   cvec
 end

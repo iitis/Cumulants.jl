@@ -17,7 +17,6 @@ julia> part(4)
  Array{Int64,1}[[1,4],[2,3]]
 ```
 """
-
 function part(m::Int)
     parts = Vector{Vector{Int}}[]
     for part in partitions(1:m)
@@ -28,8 +27,8 @@ function part(m::Int)
     end
     parts
 end
-"""
 
+"""
     pyramidmoment(data::Matrix, m::Int)
 
 Returns Array{Float, m}, the m'th moment tensor
@@ -122,7 +121,7 @@ julia> pyramidcumulants(M, 3)[2]
 function pyramidcumulants(X::Matrix{T}, m::Int = 4) where T<: AbstractFloat
     cumulants = Array{T}[]
     push!(cumulants, pyramidmoment(X, 1))
-    X = X .- mean(X, 1)
+    X = X .- mean(X, dims=1)
     for i in 2:m
       if i < 4
         push!(cumulants, pyramidmoment(X, i))

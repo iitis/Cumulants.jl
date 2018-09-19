@@ -1,6 +1,8 @@
 module Cumulants
   using SymmetricTensors
   using Combinatorics
+  using Statistics
+  using Distributed
   import SymmetricTensors: pyramidindices, ind2range, sizetest, getblockunsafe
   import Distributions: moment
 
@@ -10,5 +12,5 @@ module Cumulants
   #naive implementation
   include("naivecumulants.jl")
 
-  export moment, cumulants, naivecumulant, naivemoment
+  export moment1, cumulants, naivecumulant, naivemoment
 end

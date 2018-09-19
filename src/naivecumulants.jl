@@ -13,11 +13,9 @@ julia> momel(M, (1,1,1,1))
 
 ```
 """
-
 @inline momel(X::Matrix{T}, multind::Tuple) where T<: AbstractFloat = blockel(X, multind, multind, 0)
 
 """
-
   naivemoment(data::Matrix{Float}, m::Int)
 
 Returns Array{Float, m} the m'th moment tensor
@@ -39,16 +37,15 @@ julia> naivemoment(M, 3)
 """
 function naivemoment(X::Matrix{T}, m::Int = 4) where T<: AbstractFloat
   n = size(X, 2)
-  moment = zeros(T, fill(n, m)...)
+  moment = zeros(T, fill(n, m)...,)
   for i = 1:(n^m)
-    ind = ind2sub((fill(n, m)...), i)
+    ind = Tuple(CartesianIndices((fill(n, m)...,))[i])
     @inbounds moment[ind...] = momel(X, ind)
   end
   moment
 end
 
 # --- uses the naive method to calculate cumulants 2 - 6
-
 """
 
   mixel(X::Matrix{T}, ind::Tuple)
@@ -65,7 +62,6 @@ mixel(M, (1,1,1,1,1,1))
 1.015431116914347
 ```
 """
-
 function mixel(X::Matrix{T}, i::Tuple) where T<: AbstractFloat
   a = zero(T)
   if length(i) == 4
@@ -110,8 +106,8 @@ function mixel(X::Matrix{T}, i::Tuple) where T<: AbstractFloat
   end
   a
 end
-"""
 
+"""
   naivecumulant(data::Matrix, m::Int)
 
 Returns Array{Float, m} the m'th cumulant tensor
@@ -136,12 +132,12 @@ function naivecumulant(X::Matrix{T}, m::Int = 4) where T<: AbstractFloat
   if m == 1
     return naivemoment(X,m)
   end
-  X = X .- mean(X, 1)
+  X = X .- mean(X, dims=1)
   ret = naivemoment(X,m)
   if m in [4,5,6]
     n = size(X, 2)
     for i = 1:(n^m)
-      ind = ind2sub((fill(n, m)...), i)
+      ind = Tuple(CartesianIndices((fill(n, m)...,))[i])
       @inbounds ret[ind...] += mixel(X, ind)
     end
   end

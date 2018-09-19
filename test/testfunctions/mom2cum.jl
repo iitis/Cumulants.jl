@@ -37,11 +37,10 @@ pyramid structures and blocks
 
 Returns Array{Float, m}, the m'th moment's tensor
 """
-
 function rawmoment(X::Matrix{T}, m::Int = 4) where T<: AbstractFloat
   t,n = size(X)
   if m == 1
-    return mean(X, 1)[1,:]
+    return mean(X, dims=1)[1,:]
   else
     z = [map(i -> zeros(T, n^i), 1:m)...]
     y = zeros(T, n^m)
@@ -75,10 +74,9 @@ Uses relation between cumulants and multivariate moments from e.g.
 c_{ijkl} = m_{ijkl} - m_{ijk} m_{l} [4] - m_{ij} m_{kl} [3] + 2 m_{ij} m_{k} m_{l}
 -6 m_{i} m_{j} m_{k} m_{l}
 """
-
 function cumulants_from_moments(raw::Vector{Array{T}}) where T<: AbstractFloat
   k = length(raw)
-  cumarr = Array{Array{Float64}}(k)
+  cumarr = Array{Array{Float64}}(undef, k)
   for j in 1:k
     dimr = size(raw[j])
     cumu = zeros(Float64, dimr)
@@ -87,7 +85,7 @@ function cumulants_from_moments(raw::Vector{Array{T}}) where T<: AbstractFloat
     qpp = [(-1)^i*factorial(i) for i in 0:(ldim-1)]
     sppl = [map(length, spp[i]) for i in 1:length(spp)]
     for i in 1:prod(dimr)
-      @inbounds ind = ind2sub(dimr, i)
+      @inbounds ind = Tuple(CartesianIndices(dimr)[i])
       @inbounds cumu[ind...] = onecumulant(ind, raw, spp, sppl, qpp)
     end
     cumarr[j] = cumu

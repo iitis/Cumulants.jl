@@ -46,7 +46,7 @@ function raw_moments_upto_p(x, p=4)
         end
         y += z
     end
-    reshape(y, repmat([m+1],p)...)./n
+    reshape(y, repeat([m+1],p)...)./n
 end
 
 mutable struct CumulantsState
@@ -56,14 +56,14 @@ mutable struct CumulantsState
 end
 
 function CumulantsState(ldim)
-    spp = Array{Array{Int64,2}}(ldim)
-    qpp = Array{Int64}(ldim)
-    rpp = Array{Any}(ldim)
+    spp = Array{Array{Int64,2}}(undef, ldim)
+    qpp = Array{Int64}(undef, ldim)
+    rpp = Array{Any}(undef, ldim)
     return CumulantsState(spp, qpp, rpp)
 end
 
 function one_cumulant_from_raw_moments(state::CumulantsState, jnd, raw)
-    jnd = [jnd[find(jnd.!=1)]...] - 1
+    jnd = [jnd[findall(jnd.!=1)]...] .- 1
     nnd = length(jnd)
     ndr::Int64 = size(raw)[1]
     nrt = length(size(raw))
@@ -78,8 +78,8 @@ function one_cumulant_from_raw_moments(state::CumulantsState, jnd, raw)
         und = unique(ind)
         term = state.qpp[length(und)]
         for j in und
-            knd = jnd[find(ind.==j)] + 1
-            lnd =  vcat(knd, repmat([1], nraw - length(knd)))
+            knd = jnd[findall(ind.==j)] .+ 1
+            lnd =  vcat(knd, repeat([1], nraw - length(knd)))
             term *= raw[lnd...]
         end
     sterm +=  term
@@ -101,11 +101,11 @@ function cumulants_from_raw_moments(raw)
             if mod(i,2)==1
                 state.qpp[i] = -state.qpp[i]
             end
-            state.rpp[i] = raw[hcat([collect(1:nvar) for i in 1:i])...]
+            state.rpp[i] = raw[hcat([collect(1:nvar) for k in 1:i])...]
         end
         state.qpp = vcat(1, state.qpp)
         for i in 2:nele
-            ind = ind2sub(dimr, i)
+            ind = Tuple(CartesianIndices(dimr)[i])
             cumu[i] = one_cumulant_from_raw_moments(state, ind, raw)
         end
         return cumu

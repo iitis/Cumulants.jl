@@ -1,9 +1,12 @@
-using Base.Test
-
+using Test
 using SymmetricTensors
 using Cumulants
 using Distributions
 using Combinatorics
+using Random
+using Statistics
+using Distributed
+import Base: rand
 
 import Cumulants: indpart, momentblock, blockel, accesscum, outprodblocks,
  IndexPart, outerprodcum, usebl, momel, mixel
@@ -14,10 +17,10 @@ include("testfunctions/pyramidcumulants.jl")
 include("testfunctions/mom2cum.jl")
 include("testfunctions/leeuw_cumulants_no_nested_func.jl")
 
-srand(42)
+Random.seed!(42)
 x = randn(10,4);
 d = MvLogNormal(x'*x)
-data = rand(d, 10)'
+data = Array(rand(d, 10)')
 
 @testset "Helper functions" begin
   @testset "moment helpers" begin
@@ -30,7 +33,7 @@ data = rand(d, 10)'
 end
 
 @testset "Moment" begin
-  M =  [[-0.88626   0.279571];[-0.704774  0.131896]]
+  M = [-0.88626  0.279571; -0.704774  0.131896]
   @testset "naivemoment" begin
     @test isapprox((naivemoment(M, 3))[:, :, 1], [-0.523092 0.142552; 0.142552 -0.0407653], atol=1.0e-5)
     @test isapprox((naivemoment(M, 3))[:, :, 2], [0.142552 -0.0407653; -0.0407653 0.0120729], atol=1.0e-5)
@@ -40,20 +43,20 @@ end
     @test isapprox((pyramidmoment(M, 3))[:, :, 2], [0.142552 -0.0407653; -0.0407653 0.0120729], atol=1.0e-5)
   end
   @testset "2" begin
-    @test convert(Array, moment(data, 2)) ≈ naivemoment(data, 2)
+    @test Array(moment1(data, 2)) ≈ naivemoment(data, 2)
   end
   @testset "3" begin
-    @test convert(Array, moment(data, 3)) ≈ naivemoment(data, 3)
+    @test Array(moment1(data, 3)) ≈ naivemoment(data, 3)
   end
   @testset "4" begin
-    @test convert(Array, moment(data, 4)) ≈ naivemoment(data, 4)
-    @test convert(Array, moment(data, 4, 3)) ≈ naivemoment(data, 4)
+    @test Array(moment1(data, 4)) ≈ naivemoment(data, 4)
+    @test Array(moment1(data, 4, 3)) ≈ naivemoment(data, 4)
   end
 end
 
 @testset "Exceptions" begin
   @testset "Size of blocks" begin
-    @test_throws Exception (DimensionMismatch, moment(data, 4, 25))
+    @test_throws Exception (DimensionMismatch, moment1(data, 4, 25))
     @test_throws Exception (DimensionMismatch, cumulants(data, 3, 25))
   end
 end
@@ -93,22 +96,22 @@ gaus_dat =  [[-0.88626   0.279571];
   cn = [naivecumulant(data, i) for i = 1:6]
   @testset "Square blocks" begin
     c1, c2, c3, c4, c5, c6 = cumulants(data, 6, 2)
-    @test convert(Array, c1) ≈ cn[1]
-    @test convert(Array, c2) ≈ cn[2]
-    @test convert(Array, c3) ≈ cn[3]
-    @test convert(Array, c4) ≈ cn[4]
-    @test convert(Array, c5) ≈ cn[5]
-    @test convert(Array, c6) ≈ cn[6]
+    @test Array(c1) ≈ cn[1]
+    @test Array(c2) ≈ cn[2]
+    @test Array(c3) ≈ cn[3]
+    @test Array(c4) ≈ cn[4]
+    @test Array(c5) ≈ cn[5]
+    @test Array(c6) ≈ cn[6]
   end
 
   @testset "Non-square blocks" begin
     c1, c2, c3, c4, c5, c6 = cumulants(data, 6, 3)
-    @test convert(Array, c1) ≈ cn[1]
-    @test convert(Array, c2) ≈ cn[2]
-    @test convert(Array, c3) ≈ cn[3]
-    @test convert(Array, c4) ≈ cn[4]
-    @test convert(Array, c5) ≈ cn[5]
-    @test convert(Array, c6) ≈ cn[6]
+    @test Array(c1) ≈ cn[1]
+    @test Array(c2) ≈ cn[2]
+    @test Array(c3) ≈ cn[3]
+    @test Array(c4) ≈ cn[4]
+    @test Array(c5) ≈ cn[5]
+    @test Array(c6) ≈ cn[6]
   end
 end
 
@@ -127,38 +130,38 @@ end
 c1, c2, c3, c4, c5, c6, c7, c8 = cumulants(data[:, 1:2], 8, 2)
 @testset "Tests cumulants vs implementation from raw moments" begin
   cm1, cm2, cm3, cm4, cm5, cm6 = mom2cums(data[:, 1:2], 6)
-  @test cm2 ≈ convert(Array, c2)
-  @test cm3 ≈ convert(Array, c3)
-  @test cm4 ≈ convert(Array, c4)
-  @test cm5 ≈ convert(Array, c5)
-  @test cm6 ≈ convert(Array, c6)
+  @test cm2 ≈ Array(c2)
+  @test cm3 ≈ Array(c3)
+  @test cm4 ≈ Array(c4)
+  @test cm5 ≈ Array(c5)
+  @test cm6 ≈ Array(c6)
   llc = first_four_cumulants(data[:, 1:2])
-  @test llc[:c3] ≈ convert(Array, c3)
-  @test llc[:c4] ≈ convert(Array, c4)
+  @test llc[:c3] ≈ Array(c3)
+  @test llc[:c4] ≈ Array(c4)
 end
 
 cn1, cn2, cn3, cn4, cn5, cn6, cn7, cn8 = pyramidcumulants(data[:, 1:2], 8)
 @testset "Cumulants vs pyramid implementation square blocks" begin
-  @test convert(Array, (cumulants(gaus_dat, 3))[3]) ≈ zeros(Float64, 2, 2, 2)
-  @test convert(Array, c1) ≈ cn1
-  @test convert(Array, c2) ≈ cn2
-  @test convert(Array, c3) ≈ cn3
-  @test convert(Array, c4) ≈ cn4
-  @test convert(Array, c5) ≈ cn5
-  @test convert(Array, c6) ≈ cn6
-  @test convert(Array, c7) ≈ cn7
-  @test convert(Array, c8) ≈ cn8
+  @test Array((cumulants(gaus_dat, 3))[3]) ≈ zeros(Float64, 2, 2, 2)
+  @test Array(c1) ≈ cn1
+  @test Array(c2) ≈ cn2
+  @test Array(c3) ≈ cn3
+  @test Array(c4) ≈ cn4
+  @test Array(c5) ≈ cn5
+  @test Array(c6) ≈ cn6
+  @test Array(c7) ≈ cn7
+  @test Array(c8) ≈ cn8
 end
 
 addprocs(3)
 @everywhere using Cumulants
 @testset "Cumulants parallel implementation" begin
-  c1, c2, c3, c4, c5, c6, c7, c8 = cumulants(data[:, 1:2], 8, 2)
-    @test convert(Array, c2) ≈ cn2
-    @test convert(Array, c3) ≈ cn3
-    @test convert(Array, c4) ≈ cn4
-    @test convert(Array, c5) ≈ cn5
-    @test convert(Array, c6) ≈ cn6
-    @test convert(Array, c7) ≈ cn7
-    @test convert(Array, c8) ≈ cn8
+  c11, c12, c13, c14, c15, c16, c17, c18 = cumulants(data[:, 1:2], 8, 2)
+    @test Array(c12) ≈ cn2
+    @test Array(c13) ≈ cn3
+    @test Array(c14) ≈ cn4
+    @test Array(c15) ≈ cn5
+    @test Array(c16) ≈ cn6
+    @test Array(c17) ≈ cn7
+    @test Array(c18) ≈ cn8
 end
