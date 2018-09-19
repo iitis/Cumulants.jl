@@ -4,7 +4,6 @@ using Cumulants
 using Distributions
 using Combinatorics
 using Random
-using Statistics
 using Distributed
 import Base: rand
 

@@ -1,7 +1,7 @@
 module Cumulants
   using SymmetricTensors
   using Combinatorics
-  using Statistics
+  using Distributions
   using Distributed
   import SymmetricTensors: pyramidindices, ind2range, sizetest, getblockunsafe
   import Distributions: moment
