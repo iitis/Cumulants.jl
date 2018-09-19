@@ -7,7 +7,7 @@ Calculates cummulant tensors of any order for multivariate data.
 Functions return tensor or array of tensors in `SymmetricTensors` type. Requires [SymmetricTensors.jl](https://github.com/ZKSI/SymmetricTensors.jl). To convert to array, run:
 
 ```julia
-julia> convert(Array, data::SymmetricTensors{T, N})
+julia> Array(data::SymmetricTensors{T, N})
 ```
 
 As of 01/01/2017 [kdomino](https://github.com/kdomino) is the lead maintainer of this package.
