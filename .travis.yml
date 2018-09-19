@@ -11,7 +11,7 @@ script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
   - julia -e 'using Pkg; Pkg.add("Distributed")'
   - julia -e 'using Pkg; Pkg.add("Statistics")'
-  - julia -e 'using Pkg; Pkg.clone(pwd())'
+  - julia -e 'using Pkg; Pkg.add(pwd())'
   - julia -e 'using Pkg; Pkg.build("Cumulants"); Pkg.test("Cumulants"; coverage=true)'
 after_success:
   - julia -e 'using Pkg; cd(Pkg.dir("Cumulants")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(process_folder())'
