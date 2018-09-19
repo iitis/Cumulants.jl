@@ -1,7 +1,8 @@
 #!/usr/bin/env julia
 
 using Cumulants
-using JLD
+using JLD2
+using FileIO
 using ArgParse
 
 
@@ -25,8 +26,8 @@ function savect(t::Vector{Int}, n::Int, m::Int)
       println("bloks size = ", b)
     end
   end
-  filename = replace("res/$(m)_$(t)_$(n)_nblocks.jld", "[", "")
-  filename = replace(filename, "]", "")
+  filename = replace("res/$(m)_$(t)_$(n)_nblocks.jld2", "["=>"")
+  filename = replace(filename, "]"=>"")
   compt = Dict{String, Any}("cumulants"=> comptimes)
   push!(compt, "t" => t)
   push!(compt, "n" => n)

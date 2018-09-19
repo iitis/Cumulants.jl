@@ -1,6 +1,7 @@
 #!/usr/bin/env julia
 
-using JLD
+using JLD2
+using FileIO
 using SymmetricTensors
 using PyCall
 @pyimport matplotlib as mpl
@@ -15,12 +16,12 @@ mpl.rc("font", family="serif", size = 8)
 Plots a chart of superdiagonal elements of cumulants of and its theoretical values
 """
 function pltdiag()
-  tdiag = try load("datafortests.jld")["theoretical diag"]
+  tdiag = try load("datafortests.jld2")["theoretical diag"]
   catch
     println("please run test/gandata.jl and test/testondata.jl")
   return ()
   end
-  cum = try load("cumulants.jld")["cumulants"]
+  cum = try load("cumulants.jld2")["cumulants"]
   catch
     println("please run test/testondata.jl")
     return ()
@@ -36,7 +37,7 @@ function pltdiag()
   PyPlot.ylabel("superdiagonal elements", labelpad = -1)
   PyPlot.xlabel("superdiagonal number", labelpad = -3)
   ax[:legend](fontsize = 4.5, loc = 5)
-  fig[:savefig]("diagcumels.eps")
+  fig[:savefig]("diagcumels.pdf")
 end
 
 

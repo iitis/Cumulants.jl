@@ -1,7 +1,10 @@
 #!/usr/bin/env julia
 
 using Distributions
-using JLD
+using FileIO
+using JLD2
+using Random
+using SpecialFunctions
 
 """
   gendat(nu::Int, t::Int)
@@ -13,7 +16,7 @@ with nu degress of freedom
 function gendat(nu::Int, t::Int = 150000000)
   cm = [[1. 0.7 0.7 0.7];[0.7 1. 0.7 0.7]; [0.7 0.7 1. 0.7]; [0.7 0.7 0.7 1]]
   p = MvTDist(nu, [0., 0., 0., 0.],cm)
-  return transpose(rand(p, t))
+  return Array(transpose(rand(p, t)))
 end
 
 
@@ -44,11 +47,11 @@ end
 
 function main()
   nu = 14
-  srand(42)
+  Random.seed!(42)
   data = gendat(nu::Int)
   d = Dict{String, Any}("theoretical diag" => Float64[tcum(14, k) for k in 1:6])
   push!(d, "data" => data)
-  save("data/datafortests.jld", d)
+  save("data/datafortests.jld2", d)
 end
 
 main()

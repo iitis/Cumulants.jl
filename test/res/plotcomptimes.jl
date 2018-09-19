@@ -5,11 +5,12 @@ using PyCall
 mpl.rc("text", usetex=true)
 mpl.use("Agg")
 using PyPlot
-using JLD
+using JLD2
+using FileIO
 using ArgParse
 
 function singleplot(filename::String, name::String, compare::String = "")
-    d = load(filename*".jld")
+    d = load(filename*".jld2")
   if compare == ""
     comptimes = d[name]
     ylab = "computional time [s]"
@@ -39,20 +40,20 @@ function singleplot(filename::String, name::String, compare::String = "")
   ax[:yaxis][:set_major_formatter](f)
   ax[:legend](fontsize = 6, loc = 2, ncol = 1)
   subplots_adjust(bottom = 0.12,top=0.92)
-  fig[:savefig](name*filename*".eps")
+  fig[:savefig](name*filename*".pdf")
 end
 
 
 """
   pltspeedup(comptimes::Array{Float}, m::Int, n::Vector{Int}, T::Vector{Int}, label::String)
 
-Returns a figure in .eps format of the computional speedup of cumulants function
+Returns a figure in .pdf format of the computional speedup of cumulants function
 
 """
 
 function pltspeedup(filename::String)
   d = load(filename)
-  filename = replace(filename, ".jld", "")
+  filename = replace(filename, ".jld2"=>"")
   for f in d["functions"]
     singleplot(filename::String, f...)
   end

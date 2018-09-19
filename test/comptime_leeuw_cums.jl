@@ -1,7 +1,8 @@
 #!/usr/bin/env julia
 
 using Cumulants
-using JLD
+using JLD2
+using FileIO
 using ArgParse
 #import Cumulants: mom2cums
 
@@ -43,12 +44,12 @@ end
 """
   savecomptime(m::Int, T::Vector{Int}, n::Vector{Int}, cache::Bool)
 
-Save a file in jld format of the computional times of moment, naivemoment, rawmoment
+Save a file in jld2 format of the computional times of moment, naivemoment, rawmoment
 
 """
 function savecomptime(m::Int, t::Vector{Int}, n::Vector{Int})
-  filename = replace("res/"*string(m)*string(t)*string(n)*"leeuw_cums.jld", "[", "_")
-  filename = replace(filename, "]", "")
+  filename = replace("res/"*string(m)*string(t)*string(n)*"leeuw_cums.jld2", "["=>"_")
+  filename = replace(filename, "]"=>"")
   fs = [cumulants_upto_p, cumulants]
   compt = Dict{String, Any}()
   for f in fs

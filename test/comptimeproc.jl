@@ -1,8 +1,10 @@
 #!/usr/bin/env julia
 
 using Cumulants
-using JLD
+using JLD2
+using FileIO
 using ArgParse
+using Distributed
 
 
 
@@ -32,8 +34,8 @@ function savect(t::Int, n::Int, m::Int, maxprocs::Int, b::Int)
   comptimes = zeros(maxprocs)
   comptimes = comptimesonprocs(t,n,m,maxprocs, b)
   onec = fill(comptimes[1], maxprocs)
-  filename = replace("res/$(m)_$(t)_$(n)_$(b)_nprocs.jld", "[", "")
-  filename = replace(filename, "]", "")
+  filename = replace("res/$(m)_$(t)_$(n)_$(b)_nprocs.jld2", "["=>"")
+  filename = replace(filename, "]"=>"")
   compt = Dict{String, Any}("cumulants"=> onec, "cumulantsnc"=> comptimes)
   push!(compt, "t" => [t])
   push!(compt, "n" => n)
