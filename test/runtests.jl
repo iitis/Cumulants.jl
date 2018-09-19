@@ -43,20 +43,20 @@ end
     @test isapprox((pyramidmoment(M, 3))[:, :, 2], [0.142552 -0.0407653; -0.0407653 0.0120729], atol=1.0e-5)
   end
   @testset "2" begin
-    @test Array(moment1(data, 2)) ≈ naivemoment(data, 2)
+    @test Array(moment(data, 2)) ≈ naivemoment(data, 2)
   end
   @testset "3" begin
-    @test Array(moment1(data, 3)) ≈ naivemoment(data, 3)
+    @test Array(moment(data, 3)) ≈ naivemoment(data, 3)
   end
   @testset "4" begin
-    @test Array(moment1(data, 4)) ≈ naivemoment(data, 4)
-    @test Array(moment1(data, 4, 3)) ≈ naivemoment(data, 4)
+    @test Array(moment(data, 4)) ≈ naivemoment(data, 4)
+    @test Array(moment(data, 4, 3)) ≈ naivemoment(data, 4)
   end
 end
 
 @testset "Exceptions" begin
   @testset "Size of blocks" begin
-    @test_throws Exception (DimensionMismatch, moment1(data, 4, 25))
+    @test_throws Exception (DimensionMismatch, moment(data, 4, 25))
     @test_throws Exception (DimensionMismatch, cumulants(data, 3, 25))
   end
 end

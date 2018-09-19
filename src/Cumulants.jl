@@ -12,5 +12,5 @@ module Cumulants
   #naive implementation
   include("naivecumulants.jl")
 
-  export moment1, cumulants, naivecumulant, naivemoment
+  export moment, cumulants, naivecumulant, naivemoment
 end

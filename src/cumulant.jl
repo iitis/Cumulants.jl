@@ -105,7 +105,7 @@ end
 Returns: SymmetricTensor{Float, m}, a tensor of the m'th moment of X, where b
 is a block size. Calls 1 core or multicore moment function.
 """
-moment1(X::Matrix{T}, m::Int, b::Int=2) where T <: AbstractFloat =
+moment(X::Matrix{T}, m::Int, b::Int=2) where T <: AbstractFloat =
   (nworkers()>1) ? momentnc(X, m, b) : moment1c(X, m, b)
 
 # ---- following code is used to caclulate cumulants in SymmetricTensor form----
@@ -294,7 +294,7 @@ of cumulants of order 2, ..., m-2
 """
 function cumulant(X::Matrix{T}, cum::SymmetricTensor{T}...) where T <: AbstractFloat
   m = length(cum) + 2
-  ret =  moment1(X, m, cum[1].bls)
+  ret =  moment(X, m, cum[1].bls)
   for sigma in 2:div(m, 2)
     ret -= outerprodcum(m, sigma, cum...)
   end
