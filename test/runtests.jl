@@ -4,7 +4,7 @@ using Cumulants
 using Distributions
 using Combinatorics
 using Random
-#using Distributed
+using Distributed
 import Base: rand
 
 import Cumulants: indpart, momentblock, blockel, accesscum, outprodblocks,
