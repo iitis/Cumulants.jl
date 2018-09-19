@@ -17,10 +17,10 @@ As of 01/01/2017 [kdomino](https://github.com/kdomino) is the lead maintainer of
 Within Julia, run
 
 ```julia
-julia> Pkg.add("Cumulants")
+pkg> add Cumulants
 ```
 
-to install the files.  Julia 0.6 is required.
+to install the files. Julia 0.7 is required.
 
 
 ## Functions
@@ -45,16 +45,16 @@ julia> data = reshape(collect(1.:15.),(5,3))
 
 ```julia
 julia> m = moment(data, 3)
-SymmetricTensors.SymmetricTensor{Float64,3}(Union{Array{Float64,3}, Void}[[45.0 100.0; 100.0 230.0]
+SymmetricTensor{Float64,3}(Union{Nothing, Array{Float64,3}}[[45.0 100.0; 100.0 230.0]
 
 [100.0 230.0; 230.0 560.0] nothing; nothing nothing]
 
-Union{Array{Float64,3}, Void}[[155.0 360.0; 360.0 890.0] [565.0; 1420.0]; nothing [2275.0]], 2, 2, 3, false)
+Union{Nothing, Array{Float64,3}}[[155.0 360.0; 360.0 890.0] [565.0; 1420.0]; nothing [2275.0]], 2, 2, 3, false)
 ```
-To convert to array use `convert`
+To convert to array use:
 
 ```julia
-julia> convert(Array, m)
+julia> Array(m)
 3×3×3 Array{Float64,3}:
 [:, :, 1] =
   45.0  100.0  155.0
@@ -88,26 +88,26 @@ that determines a size of blocks in `SymmetricTensors` type.
 julia> c = cumulants(data, 3);
 
 julia> c[2]
-SymmetricTensors.SymmetricTensor{Float64,2}(Union{Array{Float64,2}, Void}[[2.0 2.0; 2.0 2.0] [2.0; 2.0]; nothing [2.0]], 2, 2, 3, false)
+SymmetricTensor{Float64,2}(Union{Nothing, Array{Float64,2}}[[2.0 2.0; 2.0 2.0] [2.0; 2.0]; nothing [2.0]], 2, 2, 3, false)
 
-
-julia>  c[3]
-SymmetricTensors.SymmetricTensor{Float64,3}(Union{Array{Float64,3}, Void}[[0.0 0.0; 0.0 0.0]
+julia> c[3]
+SymmetricTensor{Float64,3}(Union{Nothing, Array{Float64,3}}[[0.0 0.0; 0.0 0.0]
 
 [0.0 0.0; 0.0 0.0] nothing; nothing nothing]
 
-Union{Array{Float64,3}, Void}[[0.0 0.0; 0.0 0.0] [0.0; 0.0]; nothing [0.0]], 2, 2, 3, false)
+Union{Nothing, Array{Float64,3}}[[0.0 0.0; 0.0 0.0] [0.0; 0.0]; nothing [0.0]], 2, 2, 3, false)
+
 ```
-To convert to array given element of the vector `c`, just run:
+To convert to array:
 
 ```julia
-julia> convert(Array, c[2])
+julia> Array(c[2])
 3×3 Array{Float64,2}:
  2.0  2.0  2.0
  2.0  2.0  2.0
  2.0  2.0  2.0
 
- julia> convert(Array, c[3])
+ julia> Array(c[3])
 3×3×3 Array{Float64,3}:
 [:, :, 1] =
  0.0  0.0  0.0
