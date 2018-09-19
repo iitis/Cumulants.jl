@@ -127,21 +127,24 @@ end
   @test isapprox(cn8, zeros(Float64, 2, 2, 2, 2, 2, 2, 2, 2), atol=1.0e-5)
 end
 
-c1, c2, c3, c4, c5, c6, c7, c8 = cumulants(data[:, 1:2], 8, 2)
+
 @testset "Tests cumulants vs implementation from raw moments" begin
-  cm1, cm2, cm3, cm4, cm5, cm6 = mom2cums(data[:, 1:2], 6)
+  c1, c2, c3, c4, c5, c6 = cumulants(data, 6, 2)
+  cm1, cm2, cm3, cm4, cm5, cm6 = mom2cums(data, 6)
   @test cm2 ≈ Array(c2)
   @test cm3 ≈ Array(c3)
   @test cm4 ≈ Array(c4)
   @test cm5 ≈ Array(c5)
   @test cm6 ≈ Array(c6)
-  llc = first_four_cumulants(data[:, 1:2])
+  llc = first_four_cumulants(data)
+  @test llc[:c2] ≈ Array(c2)
   @test llc[:c3] ≈ Array(c3)
   @test llc[:c4] ≈ Array(c4)
 end
 
 cn1, cn2, cn3, cn4, cn5, cn6, cn7, cn8 = pyramidcumulants(data[:, 1:2], 8)
 @testset "Cumulants vs pyramid implementation square blocks" begin
+  c1, c2, c3, c4, c5, c6, c7, c8 = cumulants(data[:, 1:2], 8, 2)
   @test Array((cumulants(gaus_dat, 3))[3]) ≈ zeros(Float64, 2, 2, 2)
   @test Array(c1) ≈ cn1
   @test Array(c2) ≈ cn2

@@ -87,7 +87,7 @@ function one_cumulant_from_raw_moments(state::CumulantsState, jnd, raw)
     return sterm
 end
 
-function cumulants_from_raw_moments(raw)
+function cumulants_from_raw_moments(raw::Array{T, N}) where {T<: AbstractFloat, N}
         dimr = size(raw)
         nvar::Int64 = dimr[1]
         cumu = zeros(eltype(raw), dimr...)
@@ -101,7 +101,8 @@ function cumulants_from_raw_moments(raw)
             if mod(i,2)==1
                 state.qpp[i] = -state.qpp[i]
             end
-            state.rpp[i] = raw[hcat([collect(1:nvar) for k in 1:i])...]
+            inde = hcat([collect(1:nvar) for k in 1:i])
+            state.rpp[i] = raw[inde..., fill(1, N-length(inde))...,]
         end
         state.qpp = vcat(1, state.qpp)
         for i in 2:nele
