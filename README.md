@@ -20,7 +20,7 @@ Within Julia, run
 pkg> add Cumulants
 ```
 
-to install the files. Julia 0.7 is required.
+to install the files. Julia 0.7 or later is required.
 
 
 ## Functions
