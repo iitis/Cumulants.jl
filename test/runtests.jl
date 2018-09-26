@@ -166,4 +166,6 @@ addprocs(3)
     @test Array(c16) ≈ cn6
     @test Array(c17) ≈ cn7
     @test Array(c18) ≈ cn8
+    x = [1. 2. 3. 4. 5. 6. .7 .8 .9]
+    @test Array(moment(x,1)) == [1., 2., 3., 4., 5., 6., .7, .8, .9]
 end
