@@ -1,0 +1,26 @@
+name = "Cumulants"
+uuid = "01e79fc4-f247-5fa3-af0e-2bd1d4cc767f"
+version = "1.0.3"
+
+[deps]
+Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
+Distributed = "8ba89e20-285c-5b6f-9357-94700520ee1b"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+SymmetricTensors = "1ab33d94-6c6c-50cc-93f0-e3f623a46aa0"
+
+[extras]
+ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
+JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
+PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[compat]
+julia = "0.7, 1.0"
+
+[targets]
+test = ["ArgParse", "DataStructures", "FileIO", "JLD2", "PyCall", "PyPlot", "Random", "SpecialFunctions", "Test"]
