@@ -1,5 +1,6 @@
 # Cumulants.jl
-[![Build Status](https://travis-ci.org/iitis/Cumulants.jl.svg?branch=master)](https://travis-ci.org/iitis/Cumulants.jl)[![Coverage Status](https://coveralls.io/repos/github/ZKSI/Cumulants.jl/badge.svg?branch=master)](https://coveralls.io/github/ZKSI/Cumulants.jl?branch=master)
+[![Build Status](https://travis-ci.org/iitis/Cumulants.jl.svg?branch=master)](https://travis-ci.org/iitis/Cumulants.jl)
+[![Coverage Status](https://coveralls.io/repos/github/iitis/Cumulants.jl/badge.svg?branch=master)](https://coveralls.io/github/iitis/Cumulants.jl?branch=master)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1423115.svg)](https://doi.org/10.5281/zenodo.1423115)
 
 
