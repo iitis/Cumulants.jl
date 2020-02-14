@@ -19,7 +19,7 @@ include("testfunctions/leeuw_cumulants_no_nested_func.jl")
 Random.seed!(42)
 x = randn(10,4);
 d = MvLogNormal(x'*x)
-data = Array(rand(d, 10)')
+data = Array(rand(d, 50)')
 
 @testset "Helper functions" begin
   @testset "moment helpers" begin
@@ -155,8 +155,15 @@ cn1, cn2, cn3, cn4, cn5, cn6, cn7, cn8 = pyramidcumulants(data[:, 1:2], 8)
   @test Array(c8) ≈ cn8
 end
 
-addprocs(3)
+addprocs(2)
 @everywhere using Cumulants
+@everywhere import Cumulants: momentnc
+@testset "test momentnc"  begin
+  x = ones(100, 2)
+  m = momentnc(x ,2, 2)
+  @test Array(m) == [1.0 1.0; 1.0 1.0]
+end
+
 @testset "Cumulants parallel implementation" begin
   c11, c12, c13, c14, c15, c16, c17, c18 = cumulants(data[:, 1:2], 8, 2)
     @test Array(c12) ≈ cn2
