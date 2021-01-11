@@ -35,7 +35,7 @@ function pltdiag()
     ax[:plot]([fill(tdiag[order], n)...], "--", color = col[order], label = "theoretical")
   end
   PyPlot.ylabel("superdiagonal elements", labelpad = -1)
-  PyPlot.xlabel("superdiagonal number", labelpad = -3)
+  PyPlot.xlabel("superdiagonal index", labelpad = -3)
   ax[:legend](fontsize = 4.5, loc = 5)
   fig[:savefig]("diagcumels.pdf")
 end
