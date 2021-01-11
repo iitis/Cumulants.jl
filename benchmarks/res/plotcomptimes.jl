@@ -39,7 +39,7 @@ function singleplot(filename::String, name::String, compare::String = "")
   end
   ax[:yaxis][:set_major_formatter](f)
   ax[:legend](fontsize = 6, loc = 2, ncol = 1)
-  subplots_adjust(bottom = 0.12,top=0.92)
+  subplots_adjust(left = 0.15, bottom = 0.12,top=0.92)
   fig[:savefig](name*filename*".pdf")
 end
 
