@@ -84,13 +84,6 @@ order `1,2,3,...,m`. Cumulants are calculated for multivariate data represented
 by matrix of size `t` by `n`, i.e. data with `n` marginal variables and `t`
 realisations.
 
-#### Block size
-
-The argument `b` with default value `2`, is an optional `Int`
-that determines a size of blocks in `SymmetricTensors` type. This block size `b` is the parameter that affect
-the algorithm performance, for most cases the performance is optimal for `b = 2, 3`. The block size must 
-fulfil `0 < b ≦ size(data, 2)` otherwise error will be raised. For the performance analysis for various bolck sizes see Section 5.2.1 in 
-Krzysztof Domino, Piotr Gawron, Łukasz Pawela, *Efficient Computation of Higher-Order Cumulant Tensors*, SIAM J. Sci. Comput. 40, A1590 (2018) [![DOI](10.1137/17M1149365)](https://doi.org/10.1137/17M1149365), https://arxiv.org/abs/1701.05420. For benchmarking one can also use `benchmarks/comptimeblocks.jl`
 
 ```julia
 julia> c = cumulants(data, 3);
@@ -133,7 +126,19 @@ julia> Array(c[2])
  0.0  0.0  0.0
 ```
 
-Parallel computation available, it is efficient for large number of data realisations, e.g. `t = 1000000`. For parallel computation just run
+#### Block size
+
+The argument `b` with default value `2`, is an optional `Int`
+that determines a size of blocks in `SymmetricTensors` type. This block size `b` is the parameter that affect
+the algorithm performance, for most cases the performance is optimal for `b = 2, 3`. The block size must 
+fulfil `0 < b ≦ size(data, 2)` otherwise error will be raised. For the performance analysis for various bolck sizes see Section 5.2.1 in 
+Krzysztof Domino, Piotr Gawron, Łukasz Pawela, *Efficient Computation of Higher-Order Cumulant Tensors*, SIAM J. Sci. Comput. 40, A1590 (2018) [![DOI](10.1137/17M1149365)](https://doi.org/10.1137/17M1149365), https://arxiv.org/abs/1701.05420. For benchmarking one can also use `benchmarks/comptimeblocks.jl`
+
+
+
+#### Parallel computation
+
+Parallel computation is efficient for large number of data realisations, e.g. `t = 1000000`. For parallel computation just run
 ```julia
 julia> addprocs(n)
 julia> @everywhere using Cumulants
