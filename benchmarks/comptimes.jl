@@ -51,7 +51,7 @@ function savecomptime(m::Int, t::Vector{Int}, n::Vector{Int})
   fs = [moment, naivemoment, cumulants, naivecumulant]
   compt = Dict{String, Any}()
   for f in fs
-    fname = "$f"[11:end]
+    fname = "$(f)"
     println("called function " , fname)
     push!(compt, fname => comtimes(m, t, n, f))
   end

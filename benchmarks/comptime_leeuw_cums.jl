@@ -53,7 +53,7 @@ function savecomptime(m::Int, t::Vector{Int}, n::Vector{Int})
   fs = [cumulants_upto_p, cumulants]
   compt = Dict{String, Any}()
   for f in fs
-    fname = "$(f)"[11:end]
+    fname = "$(f)"
     println(fname)
     println("called function " , fname)
     push!(compt, fname => comtimes(m, t, n, f))
@@ -62,7 +62,7 @@ function savecomptime(m::Int, t::Vector{Int}, n::Vector{Int})
   push!(compt, "n" => n)
   push!(compt, "m" => m)
   push!(compt, "x" => "n")
-  push!(compt, "functions" => [["upto_p", "cumulants"]])
+  push!(compt, "functions" => [["cumulants_upto_p", "cumulants"]])
   save(filename, compt)
 end
 
