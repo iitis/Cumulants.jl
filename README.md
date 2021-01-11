@@ -86,7 +86,7 @@ realisations. The argument `b` with default value `2`, is an optional `Int`
 that determines a size of blocks in `SymmetricTensors` type. This block size `b` is the parameter that affect
 the algorithm performance, for most cases the performance is optimal for `b = 2, 3`. The block size must 
 fulfil `0 < b ≦ size(data, 2)` otherwise error will be raised. For the performance analysis for various bolck sizes see Section 5.2.1 in 
-Krzysztof Domino, Piotr Gawron, Łukasz Pawela, *Efficient Computation of Higher-Order Cumulant Tensors*, SIAM J. Sci. Comput. 40, A1590 (2018) [![DOI](10.1137/17M1149365)](https://doi.org/10.1137/17M1149365), https://arxiv.org/abs/1701.05420. For benchmarking one can also use `tests/comptimeblocks.jl`
+Krzysztof Domino, Piotr Gawron, Łukasz Pawela, *Efficient Computation of Higher-Order Cumulant Tensors*, SIAM J. Sci. Comput. 40, A1590 (2018) [![DOI](10.1137/17M1149365)](https://doi.org/10.1137/17M1149365), https://arxiv.org/abs/1701.05420. For benchmarking one can also use `benchmarks/comptimeblocks.jl`
 
 ```julia
 julia> c = cumulants(data, 3);
@@ -196,7 +196,7 @@ julia> naivecumulant(data, 3)
  0.0  0.0  0.0
 ```
 
-# Performance analysis
+# Performance analysis, folder `benchmarks`
 
 To analyse the computational time of cumulants vs naivecumulants and moment vs naivemoment, we supply the executable script `comptimes.jl`.
 This script returns to a .jld file computational times, given following parameters:
