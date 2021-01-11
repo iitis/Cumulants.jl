@@ -82,7 +82,11 @@ julia> cumulants(data::Matrix{T}, m::Int = 4, b::Int = 2) where T<: AbstractFloa
 Returns a vector of `SymmetricTensor{T, i}` `i = 1,2,3,...,m` of cumulants of
 order `1,2,3,...,m`. Cumulants are calculated for multivariate data represented
 by matrix of size `t` by `n`, i.e. data with `n` marginal variables and `t`
-realisations. The argument `b` with default value `2`, is an optional `Int`
+realisations.
+
+#### Block size
+
+The argument `b` with default value `2`, is an optional `Int`
 that determines a size of blocks in `SymmetricTensors` type. This block size `b` is the parameter that affect
 the algorithm performance, for most cases the performance is optimal for `b = 2, 3`. The block size must 
 fulfil `0 < b ≦ size(data, 2)` otherwise error will be raised. For the performance analysis for various bolck sizes see Section 5.2.1 in 
