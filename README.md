@@ -136,6 +136,21 @@ Krzysztof Domino, Piotr Gawron, Łukasz Pawela, *Efficient Computation of Higher
 
 The purpose of this package is to compute moments and cumulants for multivariate data. It works for univariate data `X` structured in the form of matrix with `size(X, 2) = 1` if taking `b=1`. Such univariate application is not efficient however.
 
+```julia
+julia> X = [1., 2., 3., 4.];
+
+julia> X = reshape(X, (4,1));
+
+julia> c = cumulants(X,4,1);
+
+julia> map(x -> Array(x)[1], c)
+4-element Array{Float64,1}:
+  2.5
+  1.25
+  0.0
+ -2.125
+```
+
 #### Parallel computation
 
 Parallel computation is efficient for large number of data realisations, e.g. `t = 1000000`. For parallel computation just run
