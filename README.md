@@ -131,10 +131,10 @@ julia> Array(c[2])
 The argument `b` with default value `2`, is an optional `Int`
 that determines a size of blocks in `SymmetricTensors` type. This block size `b` is the parameter that affect
 the algorithm performance, for most cases the performance is optimal for `b = 2, 3`. The block size must 
-fulfil `0 < b ≦ size(data, 2)` otherwise error will be raised. For the performance analysis for various bolck sizes see Section 5.2.1 in 
+fulfil `0 < b ≦ size(data, 2)` otherwise error will be raised. For the performance analysis for various bolck sizes see `Section 5.2.1` in 
 Krzysztof Domino, Piotr Gawron, Łukasz Pawela, *Efficient Computation of Higher-Order Cumulant Tensors*, SIAM J. Sci. Comput. 40, A1590 (2018) [![DOI](10.1137/17M1149365)](https://doi.org/10.1137/17M1149365), https://arxiv.org/abs/1701.05420. For benchmarking one can also use `benchmarks/comptimeblocks.jl`
 
-
+The purpose of this package is to compute moments and cumulants for multivariate data. It works for univariate data `X` structured in the form of matrix with `size(X, 2) = 1` if taking `b=1`. Such univariate application is not efficient however.
 
 #### Parallel computation
 
