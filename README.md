@@ -3,7 +3,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3446199.svg)](https://doi.org/10.5281/zenodo.3446199)
 
 
-Calculates cummulant tensors of any order for multivariate data.
+Calculates cumulant tensors of any order for multivariate data.
 Functions return tensor or array of tensors in `SymmetricTensors` type. Requires [SymmetricTensors.jl](https://github.com/ZKSI/SymmetricTensors.jl). To convert to array, run:
 
 ```julia
