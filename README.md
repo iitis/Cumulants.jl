@@ -149,6 +149,8 @@ julia> map(x -> Array(x)[1], c)
   0.0
  -2.125
 ```
+We do not suply exact univariate fisher's k-statistics.
+
 
 #### Parallel computation
 
