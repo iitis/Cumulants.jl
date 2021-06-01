@@ -13,7 +13,7 @@ SymmetricTensors = "1ab33d94-6c6c-50cc-93f0-e3f623a46aa0"
 Combinatorics = "0.7, 1"
 Distributions = "0.24, 0.25"
 SymmetricTensors = "1"
-julia =  "1.5, 1.6"
+julia =  "1"
 
 [extras]
 ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
