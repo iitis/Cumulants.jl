@@ -1,6 +1,6 @@
 name = "Cumulants"
 uuid = "01e79fc4-f247-5fa3-af0e-2bd1d4cc767f"
-version = "1.0.4"
+version = "1.0.5"
 
 [deps]
 Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
