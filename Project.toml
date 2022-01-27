@@ -10,9 +10,10 @@ Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 SymmetricTensors = "1ab33d94-6c6c-50cc-93f0-e3f623a46aa0"
 
 [compat]
-Combinatorics = "0.7, 1"
-Distributions = "0.24, 0.25"
+Combinatorics = "1"
+Distributions = "0.25"
 SymmetricTensors = "1"
+#CompilerSupportLibraries_jll = "0.3, 0.4, 0.5"
 julia =  "1"
 
 [extras]
