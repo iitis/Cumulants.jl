@@ -1,9 +1,10 @@
 #!/usr/bin/env julia
 
 using PyCall
-@pyimport matplotlib as mpl
-mpl.rc("text", usetex=true)
-mpl.use("Agg")
+#pyimport_conda("matplotlib", PKG)
+#mpl = pyimport("matplotlib")
+#mpl.rc("text", usetex=true)
+#mpl.use("Agg")
 using PyPlot
 using JLD2
 using FileIO
@@ -21,7 +22,7 @@ function singleplot(filename::String, name::String, compare::String = "")
   x = d["x"]
   t = d["t"]
   m = d["m"]
-  mpl.rc("font", family="serif", size = 7)
+  #mpl.rc("font", family="serif", size = 7)
   fig, ax = subplots(figsize = (2.5, 2.))
   col = ["red", "blue", "black", "green", "yellow", "orange"]
   marker = [":s", ":o", ":v", ":<", ":>", ":d"]

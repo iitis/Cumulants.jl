@@ -9,14 +9,14 @@ of X, at index cd i inside a block, where b is a standard blocks' size
 ```jldoctest
 julia> M = [1. 2.  5. 6. ; 3. 4.  7. 8.];
 
-julia> mom_el(M, (1,1), (1,1), 2)
+julia> blockel(M, (1,1), (1,1), 2)
 5.0
 
-julia> mom_el(M, (1,1), (2,2), 2)
+julia> blockel(M, (1,1), (2,2), 2)
 37.0
 ```
 """
-function blockel(data::Matrix{T}, mi::Tuple, mj::Tuple, b::Int) where T <: AbstractFloat
+function blockel(data, mi, mj, b)
   ret = 0.
   t = size(data, 1)
   for l in 1:t
