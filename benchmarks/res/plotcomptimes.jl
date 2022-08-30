@@ -1,10 +1,6 @@
 #!/usr/bin/env julia
 
 using PyCall
-#pyimport_conda("matplotlib", PKG)
-#mpl = pyimport("matplotlib")
-#mpl.rc("text", usetex=true)
-#mpl.use("Agg")
 using PyPlot
 using JLD2
 using FileIO
@@ -22,7 +18,6 @@ function singleplot(filename::String, name::String, compare::String = "")
   x = d["x"]
   t = d["t"]
   m = d["m"]
-  #mpl.rc("font", family="serif", size = 7)
   fig, ax = subplots(figsize = (2.5, 2.))
   col = ["red", "blue", "black", "green", "yellow", "orange"]
   marker = [":s", ":o", ":v", ":<", ":>", ":d"]
@@ -30,8 +25,8 @@ function singleplot(filename::String, name::String, compare::String = "")
     tt = t[i]
     ax[:plot](d[x], comptimes[:,i], marker[i], label= "t = $tt", color = col[i], markersize=2.5, linewidth = 1)
   end
-  PyPlot.ylabel(ylab, labelpad = -1.8)
-  PyPlot.xlabel(x, labelpad = -2)
+  PyPlot.ylabel(ylab, labelpad = -1)
+  PyPlot.xlabel(x, labelpad = -1)
   if maximum(comptimes) > 10
     f = matplotlib[:ticker][:ScalarFormatter]()
     f[:set_powerlimits]((-3, 2))
@@ -40,7 +35,7 @@ function singleplot(filename::String, name::String, compare::String = "")
   end
   ax[:yaxis][:set_major_formatter](f)
   ax[:legend](fontsize = 6, loc = 2, ncol = 1)
-  subplots_adjust(left = 0.15, bottom = 0.12,top=0.92)
+  subplots_adjust(left = 0.22, bottom = 0.20,top=0.92)
   fig[:savefig](name*filename*".pdf")
 end
 
