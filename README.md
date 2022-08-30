@@ -1,6 +1,6 @@
 # Cumulants.jl
 [![Coverage Status](https://coveralls.io/repos/github/iitis/Cumulants.jl/badge.svg?branch=master)](https://coveralls.io/github/iitis/Cumulants.jl?branch=master)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3446199.svg)](https://doi.org/10.5281/zenodo.3446199)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7034176.svg)](https://doi.org/10.5281/zenodo.7034176)
 
 
 Calculates cumulant tensors of any order for multivariate data.
